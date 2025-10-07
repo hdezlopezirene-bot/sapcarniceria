@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -14,35 +13,59 @@
       --accent:#1e40af; --accent-light:#3b82f6;
       --ok:#059669; --warn:#f59e0b; --alert:#dc2626;
     }
-    main {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  padding-bottom: 60px; /* espacio para la bottom-nav */
-}
-.bottom-nav {
-  display: flex;
-  justify-content: space-around;
-  border-top: 1px solid var(--border);
-  background: #e8f0ff;
-  height: 60px; /* altura consistente */
-}
-    body{margin:0;display:flex;flex-direction:column;height:100vh;background:var(--bg);color:var(--text-normal);font-family:"Inter",sans-serif;}
-    header{padding:16px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text-strong);background:#e8f0ff;}
-    main{flex:1;overflow-y:auto;padding:16px;padding-bottom: calc(60px + env(safe-area-inset-bottom));}
+    body{
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      height:100vh;
+      background:var(--bg);
+      color:var(--text-normal);
+      font-family:"Inter",sans-serif;
+    }
+    header{
+      padding:16px;
+      border-bottom:1px solid var(--border);
+      font-weight:600;
+      color:var(--text-strong);
+      background:#e8f0ff;
+    }
+    main{flex:1;overflow-y:auto;padding:16px;}
     .tab{display:none;animation:fade 0.3s;}
     .tab.active{display:block;}
     @keyframes fade{from{opacity:0;}to{opacity:1;}}
-    .bottom-nav{display:flex;justify-content:space-around;border-top:1px solid var(--border);background:#e8f0ff;height: calc(60px + env(safe-area-inset-bottom));
-padding-bottom: env(safe-area-inset-bottom);}
-    .nav-btn{flex:1;text-align:center;color:var(--text-muted);padding:6px 0;cursor:pointer;font-size:12px;}
+
+    /* 🔧 Barra inferior corregida */
+    .bottom-nav{
+      display:flex;
+      justify-content:space-around;
+      border-top:1px solid var(--border);
+      background:#e8f0ff;
+      padding-bottom: env(safe-area-inset-bottom, 0px); /* ← Fix */
+      background-clip: padding-box;
+    }
+    .nav-btn{
+      flex:1;
+      text-align:center;
+      color:var(--text-muted);
+      padding:6px 0;
+      cursor:pointer;
+      font-size:12px;
+    }
     .nav-btn.active{color:var(--accent);font-weight:600;}
+
     table{width:100%;border-collapse:collapse;font-size:13px;}
     th,td{padding:10px;border-bottom:1px solid var(--border);cursor:default;}
     th{color:var(--text-strong);background:#f0f6ff;cursor:pointer;}
     th.sort-asc::after{content:"▲";margin-left:5px;font-size:10px;}
     th.sort-desc::after{content:"▼";margin-left:5px;font-size:10px;}
-    .card{border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;background:var(--card-bg);box-shadow:0 2px 6px rgba(0,0,0,0.05);}
+    .card{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:16px;
+      margin-bottom:16px;
+      background:var(--card-bg);
+      box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    }
     .card strong{display:block;margin-bottom:6px;color:var(--text-strong);}
     .muted{color:var(--text-muted);font-size:13px;}
     .stats{display:flex;flex-wrap:wrap;gap:12px;}
@@ -101,11 +124,12 @@ padding-bottom: env(safe-area-inset-bottom);}
     <div class="nav-btn" data-tab="ventas"><i data-lucide="shopping-cart"></i><br>Ventas</div>
     <div class="nav-btn" data-tab="resumen"><i data-lucide="pie-chart"></i><br>Resumen</div>
   </nav>
+
 <script>
   lucide.createIcons();
   const today=new Date("2025-10-06");
 
-  // === DATA (con ingresados hoy) ===
+  // === DATA ===
   const data=[
     {producto:"Malaya cerdo",pct:100,venc:"—",cat:"Cerdo"},
     {producto:"Entraña cerdo",pct:100,venc:"—",cat:"Cerdo"},
