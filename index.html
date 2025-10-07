@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Dashboard Inventario</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg:#f8fbff; --card-bg:#fff; --border:#d0e0f0;
+      --text-strong:#1a2a44; --text-normal:#2f4a75; --text-muted:#7a94b8;
+      --accent:#1e40af; --accent-light:#3b82f6;
+      --ok:#059669; --warn:#f59e0b; --alert:#dc2626;
+    }
+    body{margin:0;display:flex;flex-direction:column;height:100vh;background:var(--bg);color:var(--text-normal);font-family:"Inter",sans-serif;}
+    header{padding:16px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text-strong);background:#e8f0ff;}
+    main{flex:1;overflow-y:auto;padding:16px;}
+    .tab{display:none;animation:fade 0.3s;}
+    .tab.active{display:block;}
+    @keyframes fade{from{opacity:0;}to{opacity:1;}}
+    .bottom-nav{display:flex;justify-content:space-around;border-top:1px solid var(--border);background:#e8f0ff;}
+    .nav-btn{flex:1;text-align:center;color:var(--text-muted);padding:6px 0;cursor:pointer;font-size:12px;}
+    .nav-btn.active{color:var(--accent);font-weight:600;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th,td{padding:10px;border-bottom:1px solid var(--border);cursor:default;}
+    th{color:var(--text-strong);background:#f0f6ff;cursor:pointer;}
+    th.sort-asc::after{content:"▲";margin-left:5px;font-size:10px;}
+    th.sort-desc::after{content:"▼";margin-left:5px;font-size:10px;}
+    .card{border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;background:var(--card-bg);box-shadow:0 2px 6px rgba(0,0,0,0.05);}
+    .card strong{display:block;margin-bottom:6px;color:var(--text-strong);}
+    .muted{color:var(--text-muted);font-size:13px;}
+    .stats{display:flex;flex-wrap:wrap;gap:12px;}
+    .stat{flex:1;min-width:130px;border:1px solid var(--border);border-radius:8px;padding:12px;background:#f0f6ff;text-align:center;}
+    .stat strong{display:block;font-size:18px;color:var(--accent);}
+    .exp-red{color:var(--alert);font-weight:bold;}
+    .exp-orange{color:var(--warn);font-weight:bold;}
+    .exp-green{color:var(--ok);font-weight:bold;}
+    .exp-safe{color:var(--accent-light);}
+  </style>
+</head>
+<body>
+  <header id="title">Gráficos</header>
+  <main>
+    <div id="tab-graficos" class="tab active">
+      <div class="card"><strong>Stock por categoría</strong><canvas id="chartBar"></canvas></div>
+      <div class="card"><strong>Distribución de stock</strong><canvas id="chartPie"></canvas></div>
+      <div class="card"><strong>Evolución de consumo simulado</strong><canvas id="chartLine"></canvas></div>
+    </div>
+    <div id="tab-stock" class="tab">
+      <div class="card">
+        <strong>Detalle de inventario</strong>
+        <table>
+          <thead>
+            <tr>
+              <th data-key="producto">Producto</th>
+              <th data-key="pct">%</th>
+              <th data-key="venc">Vencimiento</th>
+              <th data-key="cat">Categoría</th>
+            </tr>
+          </thead>
+          <tbody id="stockBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="tab-recs" class="tab"><div id="recList"></div></div>
+    <div id="tab-ventas" class="tab">
+      <div class="card">
+        <strong>Productos que se venden</strong>
+        <ul>
+          <li>Pulpa cerdo</li><li>Posta Paleta</li><li>Sobre costilla</li>
+          <li>Posta negra</li><li>Posta rosada</li><li>Asiento</li>
+          <li>Palanca</li><li>Pechuga entera agro</li><li>Aviones de pollo</li>
+          <li>Pollo trozado</li>
+        </ul>
+      </div>
+    </div>
+    <div id="tab-resumen" class="tab">
+      <div class="card"><strong>Resumen general</strong><div class="stats" id="statsBox"></div></div>
+    </div>
+  </main>
+  <nav class="bottom-nav">
+    <div class="nav-btn active" data-tab="graficos"><i data-lucide="bar-chart-2"></i><br>Gráficos</div>
+    <div class="nav-btn" data-tab="stock"><i data-lucide="package"></i><br>Stock</div>
+    <div class="nav-btn" data-tab="recs"><i data-lucide="lightbulb"></i><br>Recs</div>
+    <div class="nav-btn" data-tab="ventas"><i data-lucide="shopping-cart"></i><br>Ventas</div>
+    <div class="nav-btn" data-tab="resumen"><i data-lucide="pie-chart"></i><br>Resumen</div>
+  </nav>
+<script>
+  lucide.createIcons();
+  const today=new Date("2025-10-06");
+
+  // === DATA (con ingresados hoy) ===
+  const data=[
+    {producto:"Malaya cerdo",pct:100,venc:"—",cat:"Cerdo"},
+    {producto:"Entraña cerdo",pct:100,venc:"—",cat:"Cerdo"},
+    {producto:"Palanca",pct:100,venc:"06/11/2025",cat:"Vacuno"},
+    {producto:"Punta picana",pct:50,venc:"23/10/2025",cat:"Vacuno"},
+    {producto:"Paleta",pct:50,venc:"23/10/2025",cat:"Vacuno"},
+    {producto:"Huachalomo",pct:100,venc:"16/12/2025",cat:"Vacuno"},
+    {producto:"Entraña vacuno",pct:20,venc:"17/10/2025",cat:"Vacuno"},
+    {producto:"Poncho vacuno",pct:10,venc:"17/10/2025",cat:"Vacuno"},
+    {producto:"Filete",pct:50,venc:"27/10/2025",cat:"Vacuno"},
+    {producto:"Truto ala pollo",pct:60,venc:"13/10/2025",cat:"Pollo"},
+    {producto:"Truto entero",pct:40,venc:"13/10/2025",cat:"Pollo"},
+    {producto:"Pollo ganso",pct:60,venc:"14/11/2025",cat:"Pollo"},
+    {producto:"Punta de ganso",pct:40,venc:"21/10/2025",cat:"Vacuno"},
+    {producto:"Asado carnicero",pct:100,venc:"14/11/2025",cat:"Vacuno"},
+    {producto:"Posta planta",pct:100,venc:"14/11/2025",cat:"Vacuno"},
+    {producto:"Abastero",pct:60,venc:"23/10/2025",cat:"Vacuno"},
+    {producto:"Abastero",pct:100,venc:"23/10/2025",cat:"Vacuno"},
+    {producto:"Lomo liso",pct:10,venc:"11/12/2025",cat:"Vacuno"},
+    {producto:"Lomo liso",pct:100,venc:"04/12/2025",cat:"Vacuno"},
+    {producto:"Longaniza artesanal",pct:40,venc:"20/10/2025",cat:"Procesados"},
+    {producto:"Costillar",pct:100,venc:"—",cat:"Cerdo"},
+    {producto:"Lomo cerdo",pct:100,venc:"—",cat:"Cerdo"},
+    {producto:"Chuleta vetada",pct:100,venc:"—",cat:"Cerdo"},
+    {producto:"Pechuga deshuesada",pct:100,venc:"—",cat:"Pollo"},
+    {producto:"Huevos",pct:null,venc:"20/10/2025",cat:"Huevos"},
+    // Ingresados hoy
+    {producto:"Pollo entero",pct:100,venc:"20/11/2026",cat:"Pollo",ingresado:true},
+    {producto:"Tuto entero",pct:100,venc:"13/10/2025",cat:"Pollo",ingresado:true},
+    {producto:"Pulpa",pct:50,venc:"15/10/2025",cat:"Cerdo",ingresado:true},
+    {producto:"Aviones",pct:100,venc:"20/10/2025",cat:"Pollo",ingresado:true},
+    {producto:"Pechuga entera",pct:30,venc:"10/10/2025",cat:"Pollo",ingresado:true},
+    {producto:"Pollo trozado",pct:100,venc:"24/02/2027",cat:"Pollo",ingresado:true},
+    {producto:"Chuleta centro",pct:20,venc:"—",cat:"Cerdo",ingresado:true},
+    {producto:"Sobrecostilla",pct:20,venc:"11/11/2025",cat:"Vacuno",ingresado:true},
+    {producto:"Asiento",pct:20,venc:"11/11/2025",cat:"Vacuno",ingresado:true},
+    {producto:"Pechuga entera oferta",pct:100,venc:"03/03/2027",cat:"Pollo",ingresado:true},
+    {producto:"Aceite bidón",pct:100,venc:"26/08/2026",cat:"Extras",ingresado:true}
+  ];
+
+  // === RENDER TABLA ===
+  const tbody=document.getElementById("stockBody");
+  renderTable(data);
+  function renderTable(arr){
+    tbody.innerHTML="";
+    arr.forEach(d=>{
+      const tr=document.createElement("tr");
+      let colorClass="exp-safe";
+      if(d.venc && d.venc!=="—"){
+        const exp=parseDate(d.venc);
+        const diff=(exp-today)/(1000*3600*24);
+        if(diff<=3) colorClass="exp-red";
+        else if(diff<=7) colorClass="exp-orange";
+        else if(diff<=30) colorClass="exp-green";
+      }
+      tr.innerHTML=`<td>${d.producto}${d.ingresado?" ⭐":""}</td>
+                    <td>${d.pct!==null?d.pct+"%":"—"}</td>
+                    <td class="${colorClass}">${d.venc}</td>
+                    <td>${d.cat}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  function parseDate(str){
+    if(!str||str==="—") return new Date(3000,0,1);
+    const [d,m,y]=str.split("/").map(n=>parseInt(n));
+    return new Date(y,m-1,d);
+  }
+
+  // === SORT ===
+  let sortKey=null, sortDir=1;
+  document.querySelectorAll("th").forEach(th=>{
+    th.addEventListener("click",()=>{
+      const key=th.dataset.key;
+      if(sortKey===key) sortDir*=-1; else {sortKey=key;sortDir=1;}
+      document.querySelectorAll("th").forEach(x=>x.classList.remove("sort-asc","sort-desc"));
+      th.classList.add(sortDir===1?"sort-asc":"sort-desc");
+      const sorted=[...data].sort((a,b)=>{
+        if(key==="pct"){return ((a.pct||0)-(b.pct||0))*sortDir;}
+        if(key==="venc"){return (parseDate(a.venc)-parseDate(b.venc))*sortDir;}
+        return a[key].localeCompare(b[key])*sortDir;
+      });
+      renderTable(sorted);
+    });
+  });
+
+  // === GRÁFICOS ===
+  const grouped={};
+  data.forEach(d=>{if(!grouped[d.cat])grouped[d.cat]=0;grouped[d.cat]+=(d.pct||100);});
+  const colors=["#1e3a8a","#2563eb","#3b82f6","#60a5fa","#93c5fd","#bfdbfe"];
+  new Chart(document.getElementById("chartBar"),{type:"bar",data:{labels:Object.keys(grouped),datasets:[{data:Object.values(grouped),backgroundColor:colors}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+  new Chart(document.getElementById("chartPie"),{type:"doughnut",data:{labels:Object.keys(grouped),datasets:[{data:Object.values(grouped),backgroundColor:colors}]},options:{plugins:{legend:{position:"right"}}}});
+  new Chart(document.getElementById("chartLine"),{type:"line",data:{labels:["Semana 1","Semana 2","Semana 3","Semana 4"],datasets:[{label:"Consumo simulado",data:[120,95,80,65],borderColor:"#1e40af",backgroundColor:"#3b82f6",tension:0.3}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+
+  // === RECOMENDACIONES ===
+  const recs=document.getElementById("recList");
+  data.forEach(d=>{
+    if(d.pct!==null&&d.pct<=40){
+      recs.innerHTML+=`<div class="card"><strong>${d.producto} bajo (${d.pct}%)</strong><div class="muted">Reponer pronto.</div></div>`;
+    }
+    if(d.venc&&d.venc!=="—"){
+      const diff=(parseDate(d.venc)-today)/(1000*3600*24);
+      if(diff<15){recs.innerHTML+=`<div class="card"><strong>${d.producto} próximo a vencer</strong><div class="muted">Vence ${d.venc} (en ${Math.ceil(diff)} días).</div></div>`;}
+    }
+  });
+
+  // === RESUMEN ===
+  const statsBox=document.getElementById("statsBox");
+  const total=data.length;
+  const bajos=data.filter(d=>d.pct!==null&&d.pct<=40).length;
+  const proximos15=data.filter(d=>daysToExpire(d)<=15).length;
+  const proximos7=data.filter(d=>daysToExpire(d)<=7).length;
+  const proximos3=data.filter(d=>daysToExpire(d)<=3).length;
+  const sinvenc=data.filter(d=>!d.venc||d.venc==="—").length;
+  const nuevos=data.filter(d=>d.ingresado).length;
+  const stats=[
+    {label:"Total productos",val:total},
+    {label:"Stock bajo",val:bajos},
+    {label:"Vencen ≤15 días",val:proximos15},
+    {label:"Vencen ≤7 días",val:proximos7},
+    {label:"Vencen ≤3 días",val:proximos3},
+    {label:"Sin vencimiento",val:sinvenc},
+    {label:"Ingresados hoy",val:nuevos}
+  ];
+  stats.forEach(s=>{statsBox.innerHTML+=`<div class="stat"><strong>${s.val}</strong><span class="muted">${s.label}</span></div>`;});
+  function daysToExpire(d){if(!d.venc||d.venc==="—") return Infinity;return (parseDate(d.venc)-today)/(1000*3600*24);}
+
+  // === NAV ===
+  const buttons=document.querySelectorAll(".nav-btn"); const tabs=document.querySelectorAll(".tab"); const title=document.getElementById("title");
+  buttons.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      buttons.forEach(b=>b.classList.remove("active"));btn.classList.add("active");
+      tabs.forEach(tab=>tab.classList.remove("active"));
+      document.getElementById("tab-"+btn.dataset.tab).classList.add("active");
+      title.textContent=btn.textContent.trim();
+    });
+  });
+</script>
+</body>
+</html>
