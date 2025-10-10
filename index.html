@@ -3,448 +3,1329 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dashboard Inventario — Cámara</title>
+  <title>Dashboard Inventario — Cámara Frigorífica</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg:#f7fbff; --card-bg:#fff; --border:#d0e0f0;
-      --text-strong:#0f172a; --text-normal:#334155; --text-muted:#64748b;
-      --accent:#1e3a8a; --accent-light:#2563eb; --accent-bg:#eff6ff;
-      --ok:#059669; --warn:#f59e0b; --alert:#dc2626;
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-strong: #0f172a;
+      --text-normal: #334155;
+      --text-muted: #64748b;
+      --accent: #1e40af;
+      --accent-light: #3b82f6;
+      --accent-bg: #eff6ff;
+      --ok: #059669;
+      --warn: #d97706;
+      --alert: #dc2626;
+      --sidebar-width: 240px;
+      --header-height: 64px;
+      --bottom-nav-height: 70px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --radius: 8px;
     }
-    *{box-sizing:border-box}
-    body{margin:0;display:flex;flex-direction:column;height:100vh;background:var(--bg);color:var(--text-normal);font-family:Inter,system-ui,Arial,sans-serif;}
-    header{padding:16px;border-bottom:1px solid var(--border);background:var(--accent-bg);color:var(--text-strong);font-weight:600;}
-    main{flex:1;overflow:auto;padding:16px;padding-bottom:88px;}
-    .card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 3px 8px rgba(0,0,0,0.04);transition:all .18s}
-    .card:hover{transform:translateY(-3px)}
-    .card strong{display:block;margin-bottom:8px;color:var(--text-strong)}
-    .muted{color:var(--text-muted);font-size:13px}
-    .chip-box{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-    .chip{padding:6px 12px;border-radius:16px;border:1px solid var(--border);background:var(--card-bg);cursor:pointer;color:var(--text-muted);transition:all .15s}
-    .chip.active{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-light);font-weight:600}
-    table{width:100%;border-collapse:collapse;font-size:13px}
-    th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
-    th{background:var(--accent-bg);color:var(--text-strong);cursor:pointer}
-    tr:hover{background:#f1f5f9}
-    th.sort-asc::after{content:" ▲";font-size:11px}
-    th.sort-desc::after{content:" ▼";font-size:11px}
-    .stats{display:flex;flex-wrap:wrap;gap:12px}
-    .stat{flex:1;min-width:150px;border-radius:10px;padding:12px;background:var(--accent-bg);border:1px solid var(--border);cursor:pointer;transition:all .15s}
-    .stat strong{display:block;font-size:20px;color:var(--accent)}
-    .stat:hover{background:#dbeafe}
-    .accordion{overflow:hidden;max-height:0;transition:max-height .38s ease}
-    .accordion.open{max-height:420px}
-    .accordion ul{margin:8px 0 0;padding-left:18px;color:var(--text-normal)}
-    .exp-red{color:var(--alert);font-weight:700}
-    .exp-orange{color:var(--warn);font-weight:700}
-    .exp-green{color:var(--ok);font-weight:700}
-    .exp-safe{color:var(--accent-light);font-weight:700}
-    .bottom-nav{position:fixed;left:0;right:0;bottom:0;height:72px;background:#e8f0ff;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;gap:6px;padding:8px 12px}
-    .nav-btn{flex:1;text-align:center;color:var(--text-muted);cursor:pointer;font-size:12px;user-select:none}
-    .nav-btn.active{color:var(--accent);font-weight:600}
-    canvas{width:100%!important;height:260px!important;background:transparent;border-radius:8px}
-    .small-muted{font-size:12px;color:var(--text-muted)}
-    .tab{display:none}
-    .tab.active{display:block}
-    @media (max-width:600px){
-      .stat strong{font-size:18px}
-      canvas{height:200px!important}
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      height: 100vh;
+      background: var(--bg);
+      color: var(--text-normal);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-weight: 400;
+      line-height: 1.5;
+      padding-bottom: var(--bottom-nav-height);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--card-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow);
+      z-index: 10;
+    }
+
+    .logo {
+      padding: 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--text-strong);
+    }
+
+    .nav-menu {
+      flex: 1;
+      padding: 16px 0;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+
+    .nav-item.active {
+      background: var(--accent-bg);
+      color: var(--accent);
+      border-left-color: var(--accent);
+      font-weight: 500;
+    }
+
+    .nav-item i {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .header {
+      height: var(--header-height);
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-strong);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 500;
+    }
+
+    .content {
+      flex: 1;
+      overflow: auto;
+      padding: 24px;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--bottom-nav-height);
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 8px 12px;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+      z-index: 100;
+    }
+
+    .nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 4px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-muted);
+      min-height: 54px;
+    }
+
+    .nav-btn:hover {
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+
+    .nav-btn.active {
+      color: var(--accent);
+      background: var(--accent-bg);
+    }
+
+    .nav-btn i {
+      width: 20px;
+      height: 20px;
+      margin-bottom: 4px;
+    }
+
+    .nav-btn div {
+      font-size: 11px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .nav-btn.active div {
+      font-weight: 600;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid var(--border);
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-strong);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text-normal);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover {
+      background: var(--accent-bg);
+      color: var(--accent);
+      border-color: var(--accent-light);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-light);
+    }
+
+    /* Tabs */
+    .tab {
+      display: none;
+    }
+
+    .tab.active {
+      display: block;
+    }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      border-left: 4px solid var(--accent);
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Chips */
+    .chip-box {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .chip {
+      padding: 6px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      font-size: 13px;
+    }
+
+    .chip.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      background: var(--accent-bg);
+      color: var(--text-strong);
+      cursor: pointer;
+      font-weight: 500;
+      position: relative;
+    }
+
+    tr:hover {
+      background: #f8fafc;
+    }
+
+    th.sort-asc::after {
+      content: " ▲";
+      font-size: 11px;
+      position: absolute;
+      right: 8px;
+    }
+
+    th.sort-desc::after {
+      content: " ▼";
+      font-size: 11px;
+      position: absolute;
+      right: 8px;
+    }
+
+    /* Charts */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* Status indicators */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-low {
+      background: #fef2f2;
+      color: var(--alert);
+    }
+
+    .status-medium {
+      background: #fffbeb;
+      color: var(--warn);
+    }
+
+    .status-good {
+      background: #f0fdf4;
+      color: var(--ok);
+    }
+
+    .status-safe {
+      background: #eff6ff;
+      color: var(--accent);
+    }
+
+    /* Expiration indicators */
+    .exp-red {
+      color: var(--alert);
+      font-weight: 600;
+    }
+
+    .exp-orange {
+      color: var(--warn);
+      font-weight: 600;
+    }
+
+    .exp-green {
+      color: var(--ok);
+      font-weight: 600;
+    }
+
+    .exp-safe {
+      color: var(--accent-light);
+      font-weight: 600;
+    }
+
+    /* Accordion */
+    .accordion {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease;
+    }
+
+    .accordion.open {
+      max-height: 400px;
+    }
+
+    .accordion ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: var(--text-normal);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 200px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .bottom-nav {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .header {
+        padding: 0 16px;
+      }
+      
+      .content {
+        padding: 16px;
+      }
+      
+      .nav-btn div {
+        font-size: 10px;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .bottom-nav {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
-  <header id="title">Dashboard Inventario — Cámara</header>
-
-  <main>
-    <!-- GRÁFICOS -->
-    <section id="tab-graficos" class="tab active">
-      <div class="card"><strong>Stock por categoría</strong><canvas id="chartBar"></canvas></div>
-      <div class="card"><strong>Distribución de stock</strong><canvas id="chartPie"></canvas></div>
-      <div class="card"><strong>Evolución de consumo simulado</strong><canvas id="chartLine"></canvas></div>
-    </section>
-
-    <!-- STOCK -->
-    <section id="tab-stock" class="tab">
-      <div class="chip-box" id="chips">
-        <div class="chip active" data-filter="Todos">Todos</div>
-        <div class="chip" data-filter="Vacuno">Vacuno</div>
-        <div class="chip" data-filter="Cerdo">Cerdo</div>
-        <div class="chip" data-filter="Pollo">Pollo</div>
-        <div class="chip" data-filter="Procesados">Artesanales</div>
-        <div class="chip" data-filter="Extras">Extras</div>
-        <div class="chip" data-filter="Huevos">Huevos</div>
+  <!-- Sidebar Navigation -->
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">
+        <i data-lucide="package"></i>
       </div>
-
-      <div class="card">
-        <strong>Detalle de inventario</strong>
-        <div class="small-muted">Haz clic en el encabezado para ordenar. ⭐ = ingresado hoy.</div>
-        <table>
-          <thead>
-            <tr>
-              <th data-key="producto">Producto</th>
-              <th data-key="pct">%</th>
-              <th data-key="venc">Vencimiento</th>
-              <th data-key="cat">Categoría</th>
-            </tr>
-          </thead>
-          <tbody id="stockBody"></tbody>
-        </table>
+      <div class="logo-text">Inventario</div>
+    </div>
+    
+    <div class="nav-menu">
+      <div class="nav-item active" data-tab="graficos">
+        <i data-lucide="bar-chart-2"></i>
+        <span>Gráficos</span>
       </div>
-    </section>
-
-    <!-- RECOMENDACIONES -->
-    <section id="tab-recs" class="tab">
-      <div id="recList"></div>
-    </section>
-
-    <!-- VENTAS -->
-    <section id="tab-ventas" class="tab">
-      <div class="card">
-        <strong>Productos que se venden</strong>
-        <ul class="small-muted">
-          <li>Pulpa cerdo</li><li>Posta Paleta</li><li>Sobre costilla</li>
-          <li>Posta negra</li><li>Posta rosada</li><li>Asiento</li>
-          <li>Palanca</li><li>Pechuga entera agro</li><li>Aviones de pollo</li>
-          <li>Pollo trozado</li>
-        </ul>
+      <div class="nav-item" data-tab="stock">
+        <i data-lucide="package"></i>
+        <span>Inventario</span>
       </div>
-    </section>
-
-    <!-- RESUMEN -->
-    <section id="tab-resumen" class="tab">
-      <div class="card">
-        <strong>Resumen general</strong>
-        <div class="stats" id="statsBox"></div>
+      <div class="nav-item" data-tab="recs">
+        <i data-lucide="lightbulb"></i>
+        <span>Recomendaciones</span>
       </div>
-    </section>
-  </main>
-
-  <div class="bottom-nav" role="navigation" aria-label="Navegación">
-    <div class="nav-btn active" data-tab="graficos"><i data-lucide="bar-chart-2"></i><div>Gráficos</div></div>
-    <div class="nav-btn" data-tab="stock"><i data-lucide="package"></i><div>Stock</div></div>
-    <div class="nav-btn" data-tab="recs"><i data-lucide="lightbulb"></i><div>Recs</div></div>
-    <div class="nav-btn" data-tab="ventas"><i data-lucide="shopping-cart"></i><div>Ventas</div></div>
-    <div class="nav-btn" data-tab="resumen"><i data-lucide="pie-chart"></i><div>Resumen</div></div>
+      <div class="nav-item" data-tab="ventas">
+        <i data-lucide="shopping-cart"></i>
+        <span>Ventas</span>
+      </div>
+      <div class="nav-item" data-tab="resumen">
+        <i data-lucide="pie-chart"></i>
+        <span>Resumen</span>
+      </div>
+    </div>
+    
+    <div style="padding: 16px; border-top: 1px solid var(--border);">
+      <div class="user-info">
+        <div class="user-avatar">JS</div>
+        <div>
+          <div style="font-weight: 500; font-size: 14px;">Jefe de Stock</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Cámara Frigorífica</div>
+        </div>
+      </div>
+    </div>
   </div>
 
-<script>
-/* ---------- Icons ---------- */
-lucide.createIcons();
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="header">
+      <div class="header-title" id="title">Dashboard Inventario — Cámara</div>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <div style="font-size: 14px; color: var(--text-muted);">06/10/2025</div>
+        <div class="btn">
+          <i data-lucide="download"></i>
+          <span>Exportar</span>
+        </div>
+      </div>
+    </div>
 
-/* ---------- Helper & config ---------- */
-const TODAY = new Date("2025-10-06"); // fecha fija para cálculos
-function parseDateDMY(str){
-  if(!str || str==="—") return null;
-  const parts = str.split("/");
-  if(parts.length!==3) return null;
-  const d = parseInt(parts[0],10), m = parseInt(parts[1],10), y = parseInt(parts[2],10);
-  return new Date(y,m-1,d);
-}
-function daysToExpire(item){
-  const d = parseDateDMY(item.venc);
-  if(!d) return Infinity;
-  return Math.ceil((d - TODAY)/(1000*60*60*24));
-}
-function vencClass(item){
-  const days = daysToExpire(item);
-  if(days === Infinity) return "exp-safe";
-  if(days <= 3) return "exp-red";
-  if(days <= 7) return "exp-orange";
-  if(days <= 30) return "exp-green";
-  return "exp-safe";
-}
+    <div class="content">
+      <!-- GRÁFICOS -->
+      <section id="tab-graficos" class="tab active">
+        <div class="charts-grid">
+          <div class="chart-container">
+            <canvas id="chartBar"></canvas>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartPie"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Evolución de Consumo</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartLine"></canvas>
+          </div>
+        </div>
+      </section>
 
-/* ---------- DATA: inventario completo (actualizado) ---------- */
-const data = [
-  // Original camera list
-  {producto:"Malaya cerdo",pct:100,venc:"—",cat:"Cerdo"},
-  {producto:"Entraña cerdo",pct:100,venc:"—",cat:"Cerdo"},
-  {producto:"Palanca",pct:100,venc:"06/11/2025",cat:"Vacuno"},
-  {producto:"Punta picana",pct:50,venc:"23/10/2025",cat:"Vacuno"},
-  {producto:"Paleta (pqleta paleta)",pct:50,venc:"23/10/2025",cat:"Vacuno"},
-  {producto:"Huachalomo",pct:100,venc:"16/12/2025",cat:"Vacuno"},
-  {producto:"Entraña vacuno",pct:20,venc:"17/10/2025",cat:"Vacuno"},
-  {producto:"Poncho vacuno",pct:10,venc:"17/10/2025",cat:"Vacuno"},
-  {producto:"Filete",pct:50,venc:"27/10/2025",cat:"Vacuno"},
-  {producto:"Truto ala pollo",pct:60,venc:"13/10/2025",cat:"Pollo"},
-  {producto:"Truto entero",pct:40,venc:"13/10/2025",cat:"Pollo"},
-  {producto:"Pollo Ganso",pct:60,venc:"14/11/2025",cat:"Pollo"},
-  {producto:"Punta de ganso",pct:40,venc:"21/10/2025",cat:"Vacuno"},
-  {producto:"Asado carnicero",pct:100,venc:"14/11/2025",cat:"Vacuno"},
-  {producto:"Posta planta",pct:100,venc:"14/11/2025",cat:"Vacuno"},
-  {producto:"Abastero (60%)",pct:60,venc:"23/10/2025",cat:"Vacuno"},
-  {producto:"Abastero (100%)",pct:100,venc:"23/10/2025",cat:"Vacuno"},
-  {producto:"Lomo liso (10%)",pct:10,venc:"11/12/2025",cat:"Vacuno"},
-  {producto:"Lomo liso (100%)",pct:100,venc:"04/12/2025",cat:"Vacuno"},
-  {producto:"Longaniza artesanal",pct:40,venc:"20/10/2025",cat:"Procesados"},
-  {producto:"Costillar",pct:100,venc:"—",cat:"Cerdo"},
-  {producto:"Lomo cerdo (caja 1)",pct:100,venc:"—",cat:"Cerdo"},
-  {producto:"Lomo cerdo (caja 2)",pct:100,venc:"—",cat:"Cerdo"},
-  {producto:"Chuleta vetada (caja)",pct:100,venc:"—",cat:"Cerdo"},
-  {producto:"Pechuga deshuesada (caja)",pct:100,venc:"—",cat:"Pollo"},
-  {producto:"Huevos (2.5 bandejas)",pct:null,venc:"20/10/2025",cat:"Huevos"},
+      <!-- STOCK -->
+      <section id="tab-stock" class="tab">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Inventario Actual</div>
+            <div class="card-actions">
+              <div class="btn">
+                <i data-lucide="plus"></i>
+                <span>Nuevo Producto</span>
+              </div>
+              <div class="btn">
+                <i data-lucide="refresh-cw"></i>
+                <span>Actualizar</span>
+              </div>
+            </div>
+          </div>
 
-  // Earlier "Ingresados hoy" batch (marcados ingresado:true)
-  {producto:"Pollo entero (caja)",pct:100,venc:"20/11/2026",cat:"Pollo",ingresado:true},
-  {producto:"Tuto entero (caja)",pct:100,venc:"13/10/2025",cat:"Pollo",ingresado:true},
-  {producto:"Pulpa (caja)",pct:50,venc:"15/10/2025",cat:"Cerdo",ingresado:true},
-  {producto:"Aviones (caja)",pct:100,venc:"20/10/2025",cat:"Pollo",ingresado:true},
-  {producto:"Pechuga entera (caja)",pct:30,venc:"10/10/2025",cat:"Pollo",ingresado:true},
-  {producto:"Pollo trozado (2 cajas)",pct:100,venc:"24/02/2027",cat:"Pollo",ingresado:true},
-  {producto:"Chuleta centro",pct:20,venc:"—",cat:"Cerdo",ingresado:true},
-  {producto:"Sobrecostilla",pct:20,venc:"11/11/2025",cat:"Vacuno",ingresado:true},
-  {producto:"Asiento (caja)",pct:20,venc:"11/11/2025",cat:"Vacuno",ingresado:true},
-  {producto:"Pechuga entera oferta (2 cajas)",pct:100,venc:"03/03/2027",cat:"Pollo",ingresado:true},
-  {producto:"Aceite bidón (2)",pct:100,venc:"26/08/2026",cat:"Extras",ingresado:true},
+          <div class="chip-box" id="chips">
+            <div class="chip active" data-filter="Todos">Todos</div>
+            <div class="chip" data-filter="Vacuno">Vacuno</div>
+            <div class="chip" data-filter="Cerdo">Cerdo</div>
+            <div class="chip" data-filter="Pollo">Pollo</div>
+            <div class="chip" data-filter="Procesados">Artesanales</div>
+            <div class="chip" data-filter="Extras">Extras</div>
+            <div class="chip" data-filter="Huevos">Huevos</div>
+          </div>
 
-  // Later items you added
-  {producto:"Prietas (caja)",pct:60,venc:"01/11/2025",cat:"Procesados",ingresado:true},
-  {producto:"Pechuga entera (caja) - nuevo",pct:100,venc:"13/10/2025",cat:"Pollo",ingresado:true},
-  {producto:"Pechuga deshuesada (caja) - nuevo",pct:100,venc:"—",cat:"Pollo",ingresado:true},
-  {producto:"Chuleta vetada (caja) - nuevo",pct:100,venc:"—",cat:"Cerdo",ingresado:true},
-  // 2 cajas extra de Tuto/Turo entero que vencen 13/10/2025
-  {producto:"Tuto entero (caja extra 1)",pct:100,venc:"13/10/2025",cat:"Pollo",ingresado:true},
-  {producto:"Tuto entero (caja extra 2)",pct:100,venc:"13/10/2025",cat:"Pollo",ingresado:true},
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th data-key="producto">Producto</th>
+                  <th data-key="pct">Stock %</th>
+                  <th data-key="venc">Vencimiento</th>
+                  <th data-key="cat">Categoría</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="stockBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
-  // Additional items referenced earlier (duplicates intentionally kept if separate boxes)
-  {producto:"Entraña vacuno (otra caja)",pct:20,venc:"17/10/2025",cat:"Vacuno"},
-  {producto:"Abastero (otra caja)",pct:100,venc:"23/10/2025",cat:"Vacuno"}
-];
+      <!-- RECOMENDACIONES -->
+      <section id="tab-recs" class="tab">
+        <div id="recList"></div>
+      </section>
 
-/* ---------- Render stock table ---------- */
-const tbody = document.getElementById('stockBody');
+      <!-- VENTAS -->
+      <section id="tab-ventas" class="tab">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Productos Más Vendidos</div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+            <div class="status-badge status-good">Pulpa cerdo</div>
+            <div class="status-badge status-good">Posta Paleta</div>
+            <div class="status-badge status-good">Sobre costilla</div>
+            <div class="status-badge status-good">Posta negra</div>
+            <div class="status-badge status-good">Posta rosada</div>
+            <div class="status-badge status-good">Asiento</div>
+            <div class="status-badge status-good">Palanca</div>
+            <div class="status-badge status-good">Pechuga entera agro</div>
+            <div class="status-badge status-good">Aviones de pollo</div>
+            <div class="status-badge status-good">Pollo trozado</div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Tendencias de Ventas</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartSales"></canvas>
+          </div>
+        </div>
+      </section>
 
-function renderTable(list){
-  tbody.innerHTML = "";
-  list.forEach(item=>{
-    const tr = document.createElement('tr');
-    const cls = vencClass(item);
-    const vencText = item.venc && item.venc !== "—" ? item.venc : "Sin vencimiento";
-    tr.innerHTML = `
-      <td>${escapeHtml(item.producto)}${item.ingresado ? ' ⭐' : ''}</td>
-      <td>${item.pct !== null ? item.pct + '%' : '—'}</td>
-      <td class="${cls}">${vencText}${(item.venc && item.venc!=="—") ? ' ('+daysToExpire(item)+' días)' : ''}</td>
-      <td>${escapeHtml(item.cat)}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
+      <!-- RESUMEN -->
+      <section id="tab-resumen" class="tab">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="total-products">0</div>
+            <div class="stat-label">Total Productos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="low-stock">0</div>
+            <div class="stat-label">Stock Bajo</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="expiring-soon">0</div>
+            <div class="stat-label">Próximos a Vencer</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="new-today">0</div>
+            <div class="stat-label">Ingresados Hoy</div>
+          </div>
+        </div>
 
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Resumen de Inventario</div>
+          </div>
+          <div class="stats" id="statsBox"></div>
+        </div>
+      </section>
+    </div>
+  </div>
 
-/* ---------- Initial render ---------- */
-let currentList = [...data];
-renderTable(currentList);
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav" role="navigation" aria-label="Navegación principal">
+    <div class="nav-btn active" data-tab="graficos">
+      <i data-lucide="bar-chart-2"></i>
+      <div>Gráficos</div>
+    </div>
+    <div class="nav-btn" data-tab="stock">
+      <i data-lucide="package"></i>
+      <div>Stock</div>
+    </div>
+    <div class="nav-btn" data-tab="recs">
+      <i data-lucide="lightbulb"></i>
+      <div>Recomendaciones</div>
+    </div>
+    <div class="nav-btn" data-tab="ventas">
+      <i data-lucide="shopping-cart"></i>
+      <div>Ventas</div>
+    </div>
+    <div class="nav-btn" data-tab="resumen">
+      <i data-lucide="pie-chart"></i>
+      <div>Resumen</div>
+    </div>
+  </div>
 
-/* ---------- Chips (filtros rápidos) ---------- */
-document.querySelectorAll('.chip').forEach(chip=>{
-  chip.addEventListener('click',()=>{
-    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-    chip.classList.add('active');
-    const filter = chip.dataset.filter;
-    if(filter === "Todos") {
-      currentList = [...data];
-    } else {
-      currentList = data.filter(x => x.cat === filter);
-    }
-    // reset sorting when changing filter
-    lastSortKey = null; lastSortDir = 1;
-    renderTable(currentList);
-    updateCharts(); // update charts to reflect current filter
-  });
-});
-
-/* ---------- Sorting by column ---------- */
-let lastSortKey = null;
-let lastSortDir = 1;
-document.querySelectorAll('th[data-key]').forEach(th=>{
-  th.addEventListener('click',()=>{
-    const key = th.dataset.key;
-    if(lastSortKey === key) lastSortDir *= -1; else { lastSortKey = key; lastSortDir = 1; }
-    document.querySelectorAll('th').forEach(h=>h.classList.remove('sort-asc','sort-desc'));
-    th.classList.add(lastSortDir === 1 ? 'sort-asc' : 'sort-desc');
-
-    const sorted = [...currentList].sort((a,b)=>{
-      if(key === 'pct') return ((a.pct||0) - (b.pct||0)) * lastSortDir;
-      if(key === 'venc'){
-        const da = parseDateDMY(a.venc) || new Date(3000,0,1);
-        const db = parseDateDMY(b.venc) || new Date(3000,0,1);
-        return (da - db) * lastSortDir;
-      }
-      return (String(a[key]||'').localeCompare(String(b[key]||''))) * lastSortDir;
-    });
-    renderTable(sorted);
-  });
-});
-
-/* ---------- Charts ---------- */
-let chartBar, chartPie, chartLine;
-function buildCharts(){
-  const grouped = groupByCat(data);
-  const labels = Object.keys(grouped);
-  const values = Object.values(grouped);
-  const palette = ["#1e3a8a","#2563eb","#3b82f6","#60a5fa","#93c5fd","#bfdbfe"];
-
-  const ctxBar = document.getElementById('chartBar').getContext('2d');
-  chartBar = new Chart(ctxBar, {
-    type:'bar',
-    data:{labels, datasets:[{label:'Stock (suma % aproximada)', data:values, backgroundColor:palette}]},
-    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
-  });
-
-  const ctxPie = document.getElementById('chartPie').getContext('2d');
-  chartPie = new Chart(ctxPie, {
-    type:'doughnut',
-    data:{labels, datasets:[{data:values, backgroundColor:palette}]},
-    options:{plugins:{legend:{position:'right'}}}
-  });
-
-  const ctxLine = document.getElementById('chartLine').getContext('2d');
-  // Simple synthetic timeline: count per week by soonest expiries
-  const weeks = ['Semana 1','Semana 2','Semana 3','Semana 4'];
-  const simulated = [120,95,80,65];
-  chartLine = new Chart(ctxLine, {
-    type:'line',
-    data:{labels:weeks, datasets:[{label:'Consumo simulado', data:simulated, borderColor:'#1e40af', backgroundColor:'#3b82f6', tension:0.3}]},
-    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
-  });
-}
-
-function updateCharts(){
-  const grouped = groupByCat(currentList);
-  const labels = Object.keys(grouped);
-  const values = Object.values(grouped);
-  if(chartBar){
-    chartBar.data.labels = labels;
-    chartBar.data.datasets[0].data = values;
-    chartBar.update();
-  }
-  if(chartPie){
-    chartPie.data.labels = labels;
-    chartPie.data.datasets[0].data = values;
-    chartPie.update();
-  }
-}
-function groupByCat(list){
-  const g = {};
-  list.forEach(it => {
-    const k = it.cat || 'Otros';
-    if(!g[k]) g[k] = 0;
-    g[k] += (it.pct || 100);
-  });
-  return g;
-}
-
-/* ---------- Recomendaciones (stock bajo y próximos a vencer) ---------- */
-const recList = document.getElementById('recList');
-function buildRecommendations(){
-  recList.innerHTML = '';
-  // stock bajo
-  const low = data.filter(d => d.pct !== null && d.pct <= 40);
-  if(low.length){
-    const card = document.createElement('div'); card.className = 'card';
-    card.innerHTML = `<strong>Stock bajo (${low.length})</strong><div class="muted">Productos con porcentaje bajo</div>`;
-    const ul = document.createElement('ul');
-    low.forEach(i => { const li=document.createElement('li'); li.textContent = `${i.producto} — ${i.pct}%`; ul.appendChild(li); });
-    card.appendChild(ul);
-    recList.appendChild(card);
-  }
-  // próximos a vencer (<15 días)
-  const soon = data.filter(d => {
-    const days = daysToExpire(d);
-    return days !== Infinity && days < 15;
-  });
-  if(soon.length){
-    const card = document.createElement('div'); card.className = 'card';
-    card.innerHTML = `<strong>Próximos a vencer (${soon.length})</strong><div class="muted">Mover / Priorizar venta</div>`;
-    const ul = document.createElement('ul');
-    soon.forEach(i => {
-      const li = document.createElement('li');
-      li.textContent = `${i.producto} — ${i.venc} (${daysToExpire(i)} días)`;
-      ul.appendChild(li);
-    });
-    card.appendChild(ul);
-    recList.appendChild(card);
-  }
-  if(!low.length && !soon.length){
-    recList.innerHTML = '<div class="card"><strong>No hay alertas</strong><div class="muted">Todo en rango</div></div>';
-  }
-}
-
-/* ---------- Resumen con acordeones (click para ver lista) ---------- */
-const statsBox = document.getElementById('statsBox');
-function buildStats(){
-  statsBox.innerHTML = '';
-  const total = data.length;
-  const bajos = data.filter(d => d.pct !== null && d.pct <= 40);
-  const venc15 = data.filter(d => daysToExpire(d) <= 15);
-  const venc7 = data.filter(d => daysToExpire(d) <= 7);
-  const venc3 = data.filter(d => daysToExpire(d) <= 3);
-  const sinv = data.filter(d => !d.venc || d.venc === '—');
-  const nuevos = data.filter(d => d.ingresado);
-
-  const stats = [
-    {label:'Total productos', val: total, list: data},
-    {label:'Ingresados hoy', val: nuevos.length, list: nuevos},
-    {label:'Vencen ≤15 días', val: venc15.length, list: venc15},
-    {label:'Vencen ≤7 días', val: venc7.length, list: venc7},
-    {label:'Vencen ≤3 días', val: venc3.length, list: venc3},
-    {label:'Stock bajo', val: bajos.length, list: bajos},
-    {label:'Sin vencimiento', val: sinv.length, list: sinv}
-  ];
-
-  stats.forEach((s, idx) => {
-    const div = document.createElement('div');
-    div.className = 'stat';
-    const accId = 'acc-'+idx;
-    const itemsHtml = s.list.length ? s.list.map(it=>{
-      const venc = (it.venc && it.venc!=="—") ? ` — ${it.venc} (${daysToExpire(it)} días)` : ' — Sin vencimiento';
-      return `<li>${escapeHtml(it.producto)}${it.ingresado? ' ⭐':''}${venc}</li>`;
-    }).join('') : '<li>(sin items)</li>';
-    div.innerHTML = `<strong>${s.val}</strong><span class="muted">${s.label}</span>
-                     <div id="${accId}" class="accordion"><ul>${itemsHtml}</ul></div>`;
-    div.addEventListener('click', () => {
-      const acc = document.getElementById(accId);
-      acc.classList.toggle('open');
-    });
-    statsBox.appendChild(div);
-  });
-}
-
-/* ---------- Navigation (bottom nav) ---------- */
-document.querySelectorAll('.nav-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    const tab = btn.dataset.tab;
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.getElementById('tab-'+tab).classList.add('active');
-    // update page title header
-    document.getElementById('title').textContent = "Dashboard Inventario — " + btn.querySelector('div').textContent;
-    
-    // If showing charts/stock/recs, update charts and recs if necessary
-    if(tab === 'graficos') updateCharts();
-    if(tab === 'recs') buildRecommendations();
-    
-    // Refresh icons after tab change
+  <script>
+    // Initialize icons
     lucide.createIcons();
-  });
-});
 
-/* ---------- Utilities ---------- */
-function initAll(){
-  renderTable(currentList);
-  buildCharts();
-  buildRecommendations();
-  buildStats();
-}
+    // Data and helper functions
+    const TODAY = new Date("2025-10-06");
+    
+    function parseDateDMY(str) {
+      if (!str || str === "—") return null;
+      const parts = str.split("/");
+      if (parts.length !== 3) return null;
+      const d = parseInt(parts[0], 10), m = parseInt(parts[1], 10), y = parseInt(parts[2], 10);
+      return new Date(y, m - 1, d);
+    }
+    
+    function daysToExpire(item) {
+      const d = parseDateDMY(item.venc);
+      if (!d) return Infinity;
+      return Math.ceil((d - TODAY) / (1000 * 60 * 60 * 24));
+    }
+    
+    function vencClass(item) {
+      const days = daysToExpire(item);
+      if (days === Infinity) return "exp-safe";
+      if (days <= 3) return "exp-red";
+      if (days <= 7) return "exp-orange";
+      if (days <= 30) return "exp-green";
+      return "exp-safe";
+    }
+    
+    function getStockStatus(item) {
+      if (item.pct === null) return "status-safe";
+      if (item.pct <= 20) return "status-low";
+      if (item.pct <= 40) return "status-medium";
+      return "status-good";
+    }
+    
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+    }
 
-/* ---------- Start ---------- */
-initAll();
-</script>
+    // Inventory data
+    const data = [
+      // Original camera list
+      {producto: "Malaya cerdo", pct: 100, venc: "—", cat: "Cerdo"},
+      {producto: "Entraña cerdo", pct: 100, venc: "—", cat: "Cerdo"},
+      {producto: "Palanca", pct: 100, venc: "06/11/2025", cat: "Vacuno"},
+      {producto: "Punta picana", pct: 50, venc: "23/10/2025", cat: "Vacuno"},
+      {producto: "Paleta (pqleta paleta)", pct: 50, venc: "23/10/2025", cat: "Vacuno"},
+      {producto: "Huachalomo", pct: 100, venc: "16/12/2025", cat: "Vacuno"},
+      {producto: "Entraña vacuno", pct: 20, venc: "17/10/2025", cat: "Vacuno"},
+      {producto: "Poncho vacuno", pct: 10, venc: "17/10/2025", cat: "Vacuno"},
+      {producto: "Filete", pct: 50, venc: "27/10/2025", cat: "Vacuno"},
+      {producto: "Truto ala pollo", pct: 60, venc: "13/10/2025", cat: "Pollo"},
+      {producto: "Truto entero", pct: 40, venc: "13/10/2025", cat: "Pollo"},
+      {producto: "Pollo Ganso", pct: 60, venc: "14/11/2025", cat: "Pollo"},
+      {producto: "Punta de ganso", pct: 40, venc: "21/10/2025", cat: "Vacuno"},
+      {producto: "Asado carnicero", pct: 100, venc: "14/11/2025", cat: "Vacuno"},
+      {producto: "Posta planta", pct: 100, venc: "14/11/2025", cat: "Vacuno"},
+      {producto: "Abastero (60%)", pct: 60, venc: "23/10/2025", cat: "Vacuno"},
+      {producto: "Abastero (100%)", pct: 100, venc: "23/10/2025", cat: "Vacuno"},
+      {producto: "Lomo liso (10%)", pct: 10, venc: "11/12/2025", cat: "Vacuno"},
+      {producto: "Lomo liso (100%)", pct: 100, venc: "04/12/2025", cat: "Vacuno"},
+      {producto: "Longaniza artesanal", pct: 40, venc: "20/10/2025", cat: "Procesados"},
+      {producto: "Costillar", pct: 100, venc: "—", cat: "Cerdo"},
+      {producto: "Lomo cerdo (caja 1)", pct: 100, venc: "—", cat: "Cerdo"},
+      {producto: "Lomo cerdo (caja 2)", pct: 100, venc: "—", cat: "Cerdo"},
+      {producto: "Chuleta vetada (caja)", pct: 100, venc: "—", cat: "Cerdo"},
+      {producto: "Pechuga deshuesada (caja)", pct: 100, venc: "—", cat: "Pollo"},
+      {producto: "Huevos (2.5 bandejas)", pct: null, venc: "20/10/2025", cat: "Huevos"},
+
+      // Earlier "Ingresados hoy" batch (marcados ingresado:true)
+      {producto: "Pollo entero (caja)", pct: 100, venc: "20/11/2026", cat: "Pollo", ingresado: true},
+      {producto: "Tuto entero (caja)", pct: 100, venc: "13/10/2025", cat: "Pollo", ingresado: true},
+      {producto: "Pulpa (caja)", pct: 50, venc: "15/10/2025", cat: "Cerdo", ingresado: true},
+      {producto: "Aviones (caja)", pct: 100, venc: "20/10/2025", cat: "Pollo", ingresado: true},
+      {producto: "Pechuga entera (caja)", pct: 30, venc: "10/10/2025", cat: "Pollo", ingresado: true},
+      {producto: "Pollo trozado (2 cajas)", pct: 100, venc: "24/02/2027", cat: "Pollo", ingresado: true},
+      {producto: "Chuleta centro", pct: 20, venc: "—", cat: "Cerdo", ingresado: true},
+      {producto: "Sobrecostilla", pct: 20, venc: "11/11/2025", cat: "Vacuno", ingresado: true},
+      {producto: "Asiento (caja)", pct: 20, venc: "11/11/2025", cat: "Vacuno", ingresado: true},
+      {producto: "Pechuga entera oferta (2 cajas)", pct: 100, venc: "03/03/2027", cat: "Pollo", ingresado: true},
+      {producto: "Aceite bidón (2)", pct: 100, venc: "26/08/2026", cat: "Extras", ingresado: true},
+
+      // Later items you added
+      {producto: "Prietas (caja)", pct: 60, venc: "01/11/2025", cat: "Procesados", ingresado: true},
+      {producto: "Pechuga entera (caja) - nuevo", pct: 100, venc: "13/10/2025", cat: "Pollo", ingresado: true},
+      {producto: "Pechuga deshuesada (caja) - nuevo", pct: 100, venc: "—", cat: "Pollo", ingresado: true},
+      {producto: "Chuleta vetada (caja) - nuevo", pct: 100, venc: "—", cat: "Cerdo", ingresado: true},
+      {producto: "Tuto entero (caja extra 1)", pct: 100, venc: "13/10/2025", cat: "Pollo", ingresado: true},
+      {producto: "Tuto entero (caja extra 2)", pct: 100, venc: "13/10/2025", cat: "Pollo", ingresado: true},
+      {producto: "Entraña vacuno (otra caja)", pct: 20, venc: "17/10/2025", cat: "Vacuno"},
+      {producto: "Abastero (otra caja)", pct: 100, venc: "23/10/2025", cat: "Vacuno"}
+    ];
+
+    // Initialize the application
+    let currentList = [...data];
+    let lastSortKey = null;
+    let lastSortDir = 1;
+    let chartBar, chartPie, chartLine, chartSales;
+
+    // Initialize dashboard stats
+    function initStats() {
+      document.getElementById('total-products').textContent = data.length;
+      document.getElementById('low-stock').textContent = data.filter(d => d.pct !== null && d.pct <= 40).length;
+      document.getElementById('expiring-soon').textContent = data.filter(d => {
+        const days = daysToExpire(d);
+        return days !== Infinity && days < 15;
+      }).length;
+      document.getElementById('new-today').textContent = data.filter(d => d.ingresado).length;
+    }
+
+    // Render stock table
+    function renderTable(list) {
+      const tbody = document.getElementById('stockBody');
+      tbody.innerHTML = "";
+      
+      list.forEach(item => {
+        const tr = document.createElement('tr');
+        const cls = vencClass(item);
+        const statusClass = getStockStatus(item);
+        const vencText = item.venc && item.venc !== "—" ? item.venc : "Sin vencimiento";
+        
+        tr.innerHTML = `
+          <td>${escapeHtml(item.producto)}${item.ingresado ? ' <span style="color: #f59e0b;">⭐</span>' : ''}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 60px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                <div style="height: 100%; width: ${item.pct || 0}%; background: ${item.pct <= 40 ? '#dc2626' : (item.pct <= 70 ? '#f59e0b' : '#059669')};"></div>
+              </div>
+              <span>${item.pct !== null ? item.pct + '%' : '—'}</span>
+            </div>
+          </td>
+          <td class="${cls}">${vencText}${(item.venc && item.venc !== "—") ? ' (' + daysToExpire(item) + ' días)' : ''}</td>
+          <td>${escapeHtml(item.cat)}</td>
+          <td><span class="status-badge ${statusClass}">${item.pct === null ? 'Sin datos' : (item.pct <= 20 ? 'Bajo' : (item.pct <= 40 ? 'Medio' : 'Bueno'))}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Initialize filters
+    function initFilters() {
+      document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          const filter = chip.dataset.filter;
+          
+          if (filter === "Todos") {
+            currentList = [...data];
+          } else {
+            currentList = data.filter(x => x.cat === filter);
+          }
+          
+          lastSortKey = null;
+          lastSortDir = 1;
+          renderTable(currentList);
+          updateCharts();
+        });
+      });
+    }
+
+    // Initialize table sorting
+    function initSorting() {
+      document.querySelectorAll('th[data-key]').forEach(th => {
+        th.addEventListener('click', () => {
+          const key = th.dataset.key;
+          if (lastSortKey === key) lastSortDir *= -1; 
+          else { 
+            lastSortKey = key; 
+            lastSortDir = 1; 
+          }
+          
+          document.querySelectorAll('th').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+          th.classList.add(lastSortDir === 1 ? 'sort-asc' : 'sort-desc');
+
+          const sorted = [...currentList].sort((a, b) => {
+            if (key === 'pct') return ((a.pct || 0) - (b.pct || 0)) * lastSortDir;
+            if (key === 'venc') {
+              const da = parseDateDMY(a.venc) || new Date(3000, 0, 1);
+              const db = parseDateDMY(b.venc) || new Date(3000, 0, 1);
+              return (da - db) * lastSortDir;
+            }
+            return (String(a[key] || '').localeCompare(String(b[key] || ''))) * lastSortDir;
+          });
+          
+          renderTable(sorted);
+        });
+      });
+    }
+
+    // Build charts
+    function buildCharts() {
+      const grouped = groupByCat(data);
+      const labels = Object.keys(grouped);
+      const values = Object.values(grouped);
+      const palette = ["#1e40af", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe", "#dbeafe"];
+
+      // Bar chart
+      const ctxBar = document.getElementById('chartBar').getContext('2d');
+      chartBar = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Stock por Categoría',
+            data: values,
+            backgroundColor: palette,
+            borderColor: palette.map(color => color.replace('0.8', '1')),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `Stock: ${context.parsed.y}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Porcentaje de Stock'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Categorías'
+              }
+            }
+          }
+        }
+      });
+
+      // Pie chart
+      const ctxPie = document.getElementById('chartPie').getContext('2d');
+      chartPie = new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            backgroundColor: palette,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right'
+            }
+          }
+        }
+      });
+
+      // Line chart
+      const ctxLine = document.getElementById('chartLine').getContext('2d');
+      const weeks = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'];
+      const simulated = [120, 95, 80, 65];
+      
+      chartLine = new Chart(ctxLine, {
+        type: 'line',
+        data: {
+          labels: weeks,
+          datasets: [{
+            label: 'Consumo Simulado',
+            data: simulated,
+            borderColor: '#1e40af',
+            backgroundColor: 'rgba(30, 64, 175, 0.1)',
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Unidades Consumidas'
+              }
+            }
+          }
+        }
+      });
+
+      // Sales chart
+      const ctxSales = document.getElementById('chartSales').getContext('2d');
+      const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
+      const salesData = [65, 59, 80, 81, 56, 72];
+      
+      chartSales = new Chart(ctxSales, {
+        type: 'bar',
+        data: {
+          labels: months,
+          datasets: [{
+            label: 'Ventas Mensuales',
+            data: salesData,
+            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Unidades Vendidas'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function groupByCat(list) {
+      const g = {};
+      list.forEach(it => {
+        const k = it.cat || 'Otros';
+        if (!g[k]) g[k] = 0;
+        g[k] += (it.pct || 100);
+      });
+      return g;
+    }
+
+    function updateCharts() {
+      const grouped = groupByCat(currentList);
+      const labels = Object.keys(grouped);
+      const values = Object.values(grouped);
+      
+      if (chartBar) {
+        chartBar.data.labels = labels;
+        chartBar.data.datasets[0].data = values;
+        chartBar.update();
+      }
+      
+      if (chartPie) {
+        chartPie.data.labels = labels;
+        chartPie.data.datasets[0].data = values;
+        chartPie.update();
+      }
+    }
+
+    // Build recommendations
+    function buildRecommendations() {
+      const recList = document.getElementById('recList');
+      recList.innerHTML = '';
+      
+      // Low stock
+      const low = data.filter(d => d.pct !== null && d.pct <= 40);
+      if (low.length) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-title">Stock Bajo (${low.length})</div>
+            <span class="status-badge status-low">Prioridad Alta</span>
+          </div>
+          <div class="muted" style="margin-bottom: 12px;">Productos con porcentaje bajo de stock</div>
+        `;
+        
+        const ul = document.createElement('ul');
+        low.forEach(i => {
+          const li = document.createElement('li');
+          li.style.marginBottom = '8px';
+          li.innerHTML = `
+            <div style="display: flex; justify-content: space-between;">
+              <span>${i.producto}</span>
+              <span class="status-badge ${getStockStatus(i)}">${i.pct}%</span>
+            </div>
+          `;
+          ul.appendChild(li);
+        });
+        
+        card.appendChild(ul);
+        recList.appendChild(card);
+      }
+      
+      // Expiring soon
+      const soon = data.filter(d => {
+        const days = daysToExpire(d);
+        return days !== Infinity && days < 15;
+      });
+      
+      if (soon.length) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-title">Próximos a Vencer (${soon.length})</div>
+            <span class="status-badge status-medium">Prioridad Media</span>
+          </div>
+          <div class="muted" style="margin-bottom: 12px;">Mover / Priorizar venta</div>
+        `;
+        
+        const ul = document.createElement('ul');
+        soon.forEach(i => {
+          const li = document.createElement('li');
+          li.style.marginBottom = '8px';
+          const days = daysToExpire(i);
+          const priorityClass = days <= 3 ? 'status-low' : (days <= 7 ? 'status-medium' : 'status-good');
+          
+          li.innerHTML = `
+            <div style="display: flex; justify-content: space-between;">
+              <span>${i.producto}</span>
+              <span class="status-badge ${priorityClass}">${days} días</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted);">Vence: ${i.venc}</div>
+          `;
+          ul.appendChild(li);
+        });
+        
+        card.appendChild(ul);
+        recList.appendChild(card);
+      }
+      
+      if (!low.length && !soon.length) {
+        recList.innerHTML = `
+          <div class="card">
+            <div style="text-align: center; padding: 40px 20px;">
+              <i data-lucide="check-circle" style="width: 48px; height: 48px; color: var(--ok); margin-bottom: 16px;"></i>
+              <div class="card-title" style="margin-bottom: 8px;">No hay alertas</div>
+              <div class="muted">Todo está en orden por ahora</div>
+            </div>
+          </div>
+        `;
+        lucide.createIcons();
+      }
+    }
+
+    // Build stats for analytics tab
+    function buildStats() {
+      const statsBox = document.getElementById('statsBox');
+      statsBox.innerHTML = '';
+      
+      const total = data.length;
+      const bajos = data.filter(d => d.pct !== null && d.pct <= 40);
+      const venc15 = data.filter(d => daysToExpire(d) <= 15);
+      const venc7 = data.filter(d => daysToExpire(d) <= 7);
+      const venc3 = data.filter(d => daysToExpire(d) <= 3);
+      const sinv = data.filter(d => !d.venc || d.venc === '—');
+      const nuevos = data.filter(d => d.ingresado);
+
+      const stats = [
+        {label: 'Total productos', val: total, list: data},
+        {label: 'Ingresados hoy', val: nuevos.length, list: nuevos},
+        {label: 'Vencen ≤15 días', val: venc15.length, list: venc15},
+        {label: 'Vencen ≤7 días', val: venc7.length, list: venc7},
+        {label: 'Vencen ≤3 días', val: venc3.length, list: venc3},
+        {label: 'Stock bajo', val: bajos.length, list: bajos},
+        {label: 'Sin vencimiento', val: sinv.length, list: sinv}
+      ];
+
+      stats.forEach((s, idx) => {
+        const div = document.createElement('div');
+        div.className = 'stat-card';
+        const accId = 'acc-' + idx;
+        const itemsHtml = s.list.length ? s.list.map(it => {
+          const venc = (it.venc && it.venc !== "—") ? ` — ${it.venc} (${daysToExpire(it)} días)` : ' — Sin vencimiento';
+          return `<li style="margin-bottom: 4px;">${escapeHtml(it.producto)}${it.ingresado ? ' ⭐' : ''}${venc}</li>`;
+        }).join('') : '<li>(sin items)</li>';
+        
+        div.innerHTML = `
+          <div class="stat-value">${s.val}</div>
+          <div class="stat-label">${s.label}</div>
+          <div id="${accId}" class="accordion" style="margin-top: 12px;"><ul style="font-size: 13px;">${itemsHtml}</ul></div>
+        `;
+        
+        div.addEventListener('click', () => {
+          const acc = document.getElementById(accId);
+          acc.classList.toggle('open');
+        });
+        
+        statsBox.appendChild(div);
+      });
+    }
+
+    // Navigation
+    function initNavigation() {
+      // Sidebar navigation
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+          document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          
+          const tab = item.dataset.tab;
+          switchTab(tab);
+        });
+      });
+
+      // Bottom navigation
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          
+          const tab = btn.dataset.tab;
+          switchTab(tab);
+        });
+      });
+    }
+
+    // Switch tab function
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      
+      // Update page title
+      const tabTitles = {
+        'graficos': 'Dashboard Inventario — Gráficos',
+        'stock': 'Dashboard Inventario — Stock',
+        'recs': 'Dashboard Inventario — Recomendaciones',
+        'ventas': 'Dashboard Inventario — Ventas',
+        'resumen': 'Dashboard Inventario — Resumen'
+      };
+      
+      document.getElementById('title').textContent = tabTitles[tab] || 'Dashboard Inventario';
+      
+      // Update sidebar active state
+      document.querySelectorAll('.nav-item').forEach(item => {
+        if (item.dataset.tab === tab) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+      
+      // Refresh icons after tab change
+      lucide.createIcons();
+      
+      // Update specific content if needed
+      if (tab === 'recs') buildRecommendations();
+      if (tab === 'resumen') {
+        initStats();
+        buildStats();
+      }
+      if (tab === 'graficos') updateCharts();
+    }
+
+    // Initialize the application
+    function initApp() {
+      initStats();
+      renderTable(currentList);
+      initFilters();
+      initSorting();
+      buildCharts();
+      buildRecommendations();
+      buildStats();
+      initNavigation();
+    }
+
+    // Start the application
+    initApp();
+  </script>
 </body>
 </html>
