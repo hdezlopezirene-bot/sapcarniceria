@@ -1,93 +1,85 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Dashboard Inventario</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard Inventario — Cámara</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    :root {
-      --bg:#f8fbff; --card-bg:#fff; --border:#d0e0f0;
-      --text-strong:#1a2a44; --text-normal:#2f4a75; --text-muted:#7a94b8;
-      --accent:#1e40af; --accent-light:#3b82f6;
+    :root{
+      --bg:#f7fbff; --card-bg:#fff; --border:#d0e0f0;
+      --text-strong:#0f172a; --text-normal:#334155; --text-muted:#64748b;
+      --accent:#1e3a8a; --accent-light:#2563eb; --accent-bg:#eff6ff;
       --ok:#059669; --warn:#f59e0b; --alert:#dc2626;
     }
-    body{
-      margin:0;
-      display:flex;
-      flex-direction:column;
-      height:100vh;
-      background:var(--bg);
-      color:var(--text-normal);
-      font-family:"Inter",sans-serif;
+    *{box-sizing:border-box}
+    body{margin:0;display:flex;flex-direction:column;height:100vh;background:var(--bg);color:var(--text-normal);font-family:Inter,system-ui,Arial,sans-serif;}
+    header{padding:16px;border-bottom:1px solid var(--border);background:var(--accent-bg);color:var(--text-strong);font-weight:600;}
+    main{flex:1;overflow:auto;padding:16px;padding-bottom:88px;}
+    .card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 3px 8px rgba(0,0,0,0.04);transition:all .18s}
+    .card:hover{transform:translateY(-3px)}
+    .card strong{display:block;margin-bottom:8px;color:var(--text-strong)}
+    .muted{color:var(--text-muted);font-size:13px}
+    .chip-box{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .chip{padding:6px 12px;border-radius:16px;border:1px solid var(--border);background:var(--card-bg);cursor:pointer;color:var(--text-muted);transition:all .15s}
+    .chip.active{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-light);font-weight:600}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
+    th{background:var(--accent-bg);color:var(--text-strong);cursor:pointer}
+    tr:hover{background:#f1f5f9}
+    th.sort-asc::after{content:" ▲";font-size:11px}
+    th.sort-desc::after{content:" ▼";font-size:11px}
+    .stats{display:flex;flex-wrap:wrap;gap:12px}
+    .stat{flex:1;min-width:150px;border-radius:10px;padding:12px;background:var(--accent-bg);border:1px solid var(--border);cursor:pointer;transition:all .15s}
+    .stat strong{display:block;font-size:20px;color:var(--accent)}
+    .stat:hover{background:#dbeafe}
+    .accordion{overflow:hidden;max-height:0;transition:max-height .38s ease}
+    .accordion.open{max-height:420px}
+    .accordion ul{margin:8px 0 0;padding-left:18px;color:var(--text-normal)}
+    .exp-red{color:var(--alert);font-weight:700}
+    .exp-orange{color:var(--warn);font-weight:700}
+    .exp-green{color:var(--ok);font-weight:700}
+    .exp-safe{color:var(--accent-light);font-weight:700}
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;height:72px;background:#e8f0ff;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;gap:6px;padding:8px 12px}
+    .nav-btn{flex:1;text-align:center;color:var(--text-muted);cursor:pointer;font-size:12px;user-select:none}
+    .nav-btn.active{color:var(--accent);font-weight:600}
+    canvas{width:100%!important;height:260px!important;background:transparent;border-radius:8px}
+    .small-muted{font-size:12px;color:var(--text-muted)}
+    .tab{display:none}
+    .tab.active{display:block}
+    @media (max-width:600px){
+      .stat strong{font-size:18px}
+      canvas{height:200px!important}
     }
-    header{
-      padding:16px;
-      border-bottom:1px solid var(--border);
-      font-weight:600;
-      color:var(--text-strong);
-      background:#e8f0ff;
-    }
-    main{flex:1;overflow-y:auto;padding:16px;}
-    .tab{display:none;animation:fade 0.3s;}
-    .tab.active{display:block;}
-    @keyframes fade{from{opacity:0;}to{opacity:1;}}
-
-    /* 🔧 Barra inferior corregida */
-    .bottom-nav{
-      display:flex;
-      justify-content:space-around;
-      border-top:1px solid var(--border);
-      background:#e8f0ff;
-      padding-bottom: env(safe-area-inset-bottom, 0px); /* ← Fix */
-      background-clip: padding-box;
-    }
-    .nav-btn{
-      flex:1;
-      text-align:center;
-      color:var(--text-muted);
-      padding:6px 0;
-      cursor:pointer;
-      font-size:12px;
-    }
-    .nav-btn.active{color:var(--accent);font-weight:600;}
-
-    table{width:100%;border-collapse:collapse;font-size:13px;}
-    th,td{padding:10px;border-bottom:1px solid var(--border);cursor:default;}
-    th{color:var(--text-strong);background:#f0f6ff;cursor:pointer;}
-    th.sort-asc::after{content:"▲";margin-left:5px;font-size:10px;}
-    th.sort-desc::after{content:"▼";margin-left:5px;font-size:10px;}
-    .card{
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:16px;
-      margin-bottom:16px;
-      background:var(--card-bg);
-      box-shadow:0 2px 6px rgba(0,0,0,0.05);
-    }
-    .card strong{display:block;margin-bottom:6px;color:var(--text-strong);}
-    .muted{color:var(--text-muted);font-size:13px;}
-    .stats{display:flex;flex-wrap:wrap;gap:12px;}
-    .stat{flex:1;min-width:130px;border:1px solid var(--border);border-radius:8px;padding:12px;background:#f0f6ff;text-align:center;}
-    .stat strong{display:block;font-size:18px;color:var(--accent);}
-    .exp-red{color:var(--alert);font-weight:bold;}
-    .exp-orange{color:var(--warn);font-weight:bold;}
-    .exp-green{color:var(--ok);font-weight:bold;}
-    .exp-safe{color:var(--accent-light);}
   </style>
 </head>
 <body>
-  <header id="title">Gráficos</header>
+  <header id="title">Dashboard Inventario — Cámara</header>
+
   <main>
-    <div id="tab-graficos" class="tab active">
+    <!-- GRÁFICOS -->
+    <section id="tab-graficos" class="tab active">
       <div class="card"><strong>Stock por categoría</strong><canvas id="chartBar"></canvas></div>
       <div class="card"><strong>Distribución de stock</strong><canvas id="chartPie"></canvas></div>
       <div class="card"><strong>Evolución de consumo simulado</strong><canvas id="chartLine"></canvas></div>
-    </div>
-    <div id="tab-stock" class="tab">
+    </section>
+
+    <!-- STOCK -->
+    <section id="tab-stock" class="tab">
+      <div class="chip-box" id="chips">
+        <div class="chip active" data-filter="Todos">Todos</div>
+        <div class="chip" data-filter="Vacuno">Vacuno</div>
+        <div class="chip" data-filter="Cerdo">Cerdo</div>
+        <div class="chip" data-filter="Pollo">Pollo</div>
+        <div class="chip" data-filter="Procesados">Artesanales</div>
+        <div class="chip" data-filter="Extras">Extras</div>
+        <div class="chip" data-filter="Huevos">Huevos</div>
+      </div>
+
       <div class="card">
         <strong>Detalle de inventario</strong>
+        <div class="small-muted">Haz clic en el encabezado para ordenar. ⭐ = ingresado hoy.</div>
         <table>
           <thead>
             <tr>
@@ -100,172 +92,359 @@
           <tbody id="stockBody"></tbody>
         </table>
       </div>
-    </div>
-    <div id="tab-recs" class="tab"><div id="recList"></div></div>
-    <div id="tab-ventas" class="tab">
+    </section>
+
+    <!-- RECOMENDACIONES -->
+    <section id="tab-recs" class="tab">
+      <div id="recList"></div>
+    </section>
+
+    <!-- VENTAS -->
+    <section id="tab-ventas" class="tab">
       <div class="card">
         <strong>Productos que se venden</strong>
-        <ul>
+        <ul class="small-muted">
           <li>Pulpa cerdo</li><li>Posta Paleta</li><li>Sobre costilla</li>
           <li>Posta negra</li><li>Posta rosada</li><li>Asiento</li>
           <li>Palanca</li><li>Pechuga entera agro</li><li>Aviones de pollo</li>
           <li>Pollo trozado</li>
         </ul>
       </div>
-    </div>
-    <div id="tab-resumen" class="tab">
-      <div class="card"><strong>Resumen general</strong><div class="stats" id="statsBox"></div></div>
-    </div>
+    </section>
+
+    <!-- RESUMEN -->
+    <section id="tab-resumen" class="tab">
+      <div class="card">
+        <strong>Resumen general</strong>
+        <div class="stats" id="statsBox"></div>
+      </div>
+    </section>
   </main>
-  <nav class="bottom-nav">
-    <div class="nav-btn active" data-tab="graficos"><i data-lucide="bar-chart-2"></i><br>Gráficos</div>
-    <div class="nav-btn" data-tab="stock"><i data-lucide="package"></i><br>Stock</div>
-    <div class="nav-btn" data-tab="recs"><i data-lucide="lightbulb"></i><br>Recs</div>
-    <div class="nav-btn" data-tab="ventas"><i data-lucide="shopping-cart"></i><br>Ventas</div>
-    <div class="nav-btn" data-tab="resumen"><i data-lucide="pie-chart"></i><br>Resumen</div>
-  </nav>
+
+  <div class="bottom-nav" role="navigation" aria-label="Navegación">
+    <div class="nav-btn active" data-tab="graficos"><i data-lucide="bar-chart-2"></i><div>Gráficos</div></div>
+    <div class="nav-btn" data-tab="stock"><i data-lucide="package"></i><div>Stock</div></div>
+    <div class="nav-btn" data-tab="recs"><i data-lucide="lightbulb"></i><div>Recs</div></div>
+    <div class="nav-btn" data-tab="ventas"><i data-lucide="shopping-cart"></i><div>Ventas</div></div>
+    <div class="nav-btn" data-tab="resumen"><i data-lucide="pie-chart"></i><div>Resumen</div></div>
+  </div>
 
 <script>
-  lucide.createIcons();
-  const today=new Date("2025-10-06");
+/* ---------- Icons ---------- */
+lucide.createIcons();
 
-  // === DATA ===
-  const data=[
-    {producto:"Malaya cerdo",pct:100,venc:"—",cat:"Cerdo"},
-    {producto:"Entraña cerdo",pct:100,venc:"—",cat:"Cerdo"},
-    {producto:"Palanca",pct:100,venc:"06/11/2025",cat:"Vacuno"},
-    {producto:"Punta picana",pct:50,venc:"23/10/2025",cat:"Vacuno"},
-    {producto:"Paleta",pct:50,venc:"23/10/2025",cat:"Vacuno"},
-    {producto:"Huachalomo",pct:100,venc:"16/12/2025",cat:"Vacuno"},
-    {producto:"Entraña vacuno",pct:20,venc:"17/10/2025",cat:"Vacuno"},
-    {producto:"Poncho vacuno",pct:10,venc:"17/10/2025",cat:"Vacuno"},
-    {producto:"Filete",pct:50,venc:"27/10/2025",cat:"Vacuno"},
-    {producto:"Truto ala pollo",pct:60,venc:"13/10/2025",cat:"Pollo"},
-    {producto:"Truto entero",pct:40,venc:"13/10/2025",cat:"Pollo"},
-    {producto:"Pollo ganso",pct:60,venc:"14/11/2025",cat:"Pollo"},
-    {producto:"Punta de ganso",pct:40,venc:"21/10/2025",cat:"Vacuno"},
-    {producto:"Asado carnicero",pct:100,venc:"14/11/2025",cat:"Vacuno"},
-    {producto:"Posta planta",pct:100,venc:"14/11/2025",cat:"Vacuno"},
-    {producto:"Abastero",pct:60,venc:"23/10/2025",cat:"Vacuno"},
-    {producto:"Abastero",pct:100,venc:"23/10/2025",cat:"Vacuno"},
-    {producto:"Lomo liso",pct:10,venc:"11/12/2025",cat:"Vacuno"},
-    {producto:"Lomo liso",pct:100,venc:"04/12/2025",cat:"Vacuno"},
-    {producto:"Longaniza artesanal",pct:40,venc:"20/10/2025",cat:"Procesados"},
-    {producto:"Costillar",pct:100,venc:"—",cat:"Cerdo"},
-    {producto:"Lomo cerdo",pct:100,venc:"—",cat:"Cerdo"},
-    {producto:"Chuleta vetada",pct:100,venc:"—",cat:"Cerdo"},
-    {producto:"Pechuga deshuesada",pct:100,venc:"—",cat:"Pollo"},
-    {producto:"Huevos",pct:null,venc:"20/10/2025",cat:"Huevos"},
-    // Ingresados hoy
-    {producto:"Pollo entero",pct:100,venc:"20/11/2026",cat:"Pollo",ingresado:true},
-    {producto:"Tuto entero",pct:100,venc:"13/10/2025",cat:"Pollo",ingresado:true},
-    {producto:"Pulpa",pct:50,venc:"15/10/2025",cat:"Cerdo",ingresado:true},
-    {producto:"Aviones",pct:100,venc:"20/10/2025",cat:"Pollo",ingresado:true},
-    {producto:"Pechuga entera",pct:30,venc:"10/10/2025",cat:"Pollo",ingresado:true},
-    {producto:"Pollo trozado",pct:100,venc:"24/02/2027",cat:"Pollo",ingresado:true},
-    {producto:"Chuleta centro",pct:20,venc:"—",cat:"Cerdo",ingresado:true},
-    {producto:"Sobrecostilla",pct:20,venc:"11/11/2025",cat:"Vacuno",ingresado:true},
-    {producto:"Asiento",pct:20,venc:"11/11/2025",cat:"Vacuno",ingresado:true},
-    {producto:"Pechuga entera oferta",pct:100,venc:"03/03/2027",cat:"Pollo",ingresado:true},
-    {producto:"Aceite bidón",pct:100,venc:"26/08/2026",cat:"Extras",ingresado:true}
-  ];
+/* ---------- Helper & config ---------- */
+const TODAY = new Date("2025-10-06"); // fecha fija para cálculos
+function parseDateDMY(str){
+  if(!str || str==="—") return null;
+  const parts = str.split("/");
+  if(parts.length!==3) return null;
+  const d = parseInt(parts[0],10), m = parseInt(parts[1],10), y = parseInt(parts[2],10);
+  return new Date(y,m-1,d);
+}
+function daysToExpire(item){
+  const d = parseDateDMY(item.venc);
+  if(!d) return Infinity;
+  return Math.ceil((d - TODAY)/(1000*60*60*24));
+}
+function vencClass(item){
+  const days = daysToExpire(item);
+  if(days === Infinity) return "exp-safe";
+  if(days <= 3) return "exp-red";
+  if(days <= 7) return "exp-orange";
+  if(days <= 30) return "exp-green";
+  return "exp-safe";
+}
 
-  // === RENDER TABLA ===
-  const tbody=document.getElementById("stockBody");
-  renderTable(data);
-  function renderTable(arr){
-    tbody.innerHTML="";
-    arr.forEach(d=>{
-      const tr=document.createElement("tr");
-      let colorClass="exp-safe";
-      if(d.venc && d.venc!=="—"){
-        const exp=parseDate(d.venc);
-        const diff=(exp-today)/(1000*3600*24);
-        if(diff<=3) colorClass="exp-red";
-        else if(diff<=7) colorClass="exp-orange";
-        else if(diff<=30) colorClass="exp-green";
+/* ---------- DATA: inventario completo (actualizado) ---------- */
+const data = [
+  // Original camera list
+  {producto:"Malaya cerdo",pct:100,venc:"—",cat:"Cerdo"},
+  {producto:"Entraña cerdo",pct:100,venc:"—",cat:"Cerdo"},
+  {producto:"Palanca",pct:100,venc:"06/11/2025",cat:"Vacuno"},
+  {producto:"Punta picana",pct:50,venc:"23/10/2025",cat:"Vacuno"},
+  {producto:"Paleta (pqleta paleta)",pct:50,venc:"23/10/2025",cat:"Vacuno"},
+  {producto:"Huachalomo",pct:100,venc:"16/12/2025",cat:"Vacuno"},
+  {producto:"Entraña vacuno",pct:20,venc:"17/10/2025",cat:"Vacuno"},
+  {producto:"Poncho vacuno",pct:10,venc:"17/10/2025",cat:"Vacuno"},
+  {producto:"Filete",pct:50,venc:"27/10/2025",cat:"Vacuno"},
+  {producto:"Truto ala pollo",pct:60,venc:"13/10/2025",cat:"Pollo"},
+  {producto:"Truto entero",pct:40,venc:"13/10/2025",cat:"Pollo"},
+  {producto:"Pollo Ganso",pct:60,venc:"14/11/2025",cat:"Pollo"},
+  {producto:"Punta de ganso",pct:40,venc:"21/10/2025",cat:"Vacuno"},
+  {producto:"Asado carnicero",pct:100,venc:"14/11/2025",cat:"Vacuno"},
+  {producto:"Posta planta",pct:100,venc:"14/11/2025",cat:"Vacuno"},
+  {producto:"Abastero (60%)",pct:60,venc:"23/10/2025",cat:"Vacuno"},
+  {producto:"Abastero (100%)",pct:100,venc:"23/10/2025",cat:"Vacuno"},
+  {producto:"Lomo liso (10%)",pct:10,venc:"11/12/2025",cat:"Vacuno"},
+  {producto:"Lomo liso (100%)",pct:100,venc:"04/12/2025",cat:"Vacuno"},
+  {producto:"Longaniza artesanal",pct:40,venc:"20/10/2025",cat:"Procesados"},
+  {producto:"Costillar",pct:100,venc:"—",cat:"Cerdo"},
+  {producto:"Lomo cerdo (caja 1)",pct:100,venc:"—",cat:"Cerdo"},
+  {producto:"Lomo cerdo (caja 2)",pct:100,venc:"—",cat:"Cerdo"},
+  {producto:"Chuleta vetada (caja)",pct:100,venc:"—",cat:"Cerdo"},
+  {producto:"Pechuga deshuesada (caja)",pct:100,venc:"—",cat:"Pollo"},
+  {producto:"Huevos (2.5 bandejas)",pct:null,venc:"20/10/2025",cat:"Huevos"},
+
+  // Earlier "Ingresados hoy" batch (marcados ingresado:true)
+  {producto:"Pollo entero (caja)",pct:100,venc:"20/11/2026",cat:"Pollo",ingresado:true},
+  {producto:"Tuto entero (caja)",pct:100,venc:"13/10/2025",cat:"Pollo",ingresado:true},
+  {producto:"Pulpa (caja)",pct:50,venc:"15/10/2025",cat:"Cerdo",ingresado:true},
+  {producto:"Aviones (caja)",pct:100,venc:"20/10/2025",cat:"Pollo",ingresado:true},
+  {producto:"Pechuga entera (caja)",pct:30,venc:"10/10/2025",cat:"Pollo",ingresado:true},
+  {producto:"Pollo trozado (2 cajas)",pct:100,venc:"24/02/2027",cat:"Pollo",ingresado:true},
+  {producto:"Chuleta centro",pct:20,venc:"—",cat:"Cerdo",ingresado:true},
+  {producto:"Sobrecostilla",pct:20,venc:"11/11/2025",cat:"Vacuno",ingresado:true},
+  {producto:"Asiento (caja)",pct:20,venc:"11/11/2025",cat:"Vacuno",ingresado:true},
+  {producto:"Pechuga entera oferta (2 cajas)",pct:100,venc:"03/03/2027",cat:"Pollo",ingresado:true},
+  {producto:"Aceite bidón (2)",pct:100,venc:"26/08/2026",cat:"Extras",ingresado:true},
+
+  // Later items you added
+  {producto:"Prietas (caja)",pct:60,venc:"01/11/2025",cat:"Procesados",ingresado:true},
+  {producto:"Pechuga entera (caja) - nuevo",pct:100,venc:"13/10/2025",cat:"Pollo",ingresado:true},
+  {producto:"Pechuga deshuesada (caja) - nuevo",pct:100,venc:"—",cat:"Pollo",ingresado:true},
+  {producto:"Chuleta vetada (caja) - nuevo",pct:100,venc:"—",cat:"Cerdo",ingresado:true},
+  // 2 cajas extra de Tuto/Turo entero que vencen 13/10/2025
+  {producto:"Tuto entero (caja extra 1)",pct:100,venc:"13/10/2025",cat:"Pollo",ingresado:true},
+  {producto:"Tuto entero (caja extra 2)",pct:100,venc:"13/10/2025",cat:"Pollo",ingresado:true},
+
+  // Additional items referenced earlier (duplicates intentionally kept if separate boxes)
+  {producto:"Entraña vacuno (otra caja)",pct:20,venc:"17/10/2025",cat:"Vacuno"},
+  {producto:"Abastero (otra caja)",pct:100,venc:"23/10/2025",cat:"Vacuno"}
+];
+
+/* ---------- Render stock table ---------- */
+const tbody = document.getElementById('stockBody');
+
+function renderTable(list){
+  tbody.innerHTML = "";
+  list.forEach(item=>{
+    const tr = document.createElement('tr');
+    const cls = vencClass(item);
+    const vencText = item.venc && item.venc !== "—" ? item.venc : "Sin vencimiento";
+    tr.innerHTML = `
+      <td>${escapeHtml(item.producto)}${item.ingresado ? ' ⭐' : ''}</td>
+      <td>${item.pct !== null ? item.pct + '%' : '—'}</td>
+      <td class="${cls}">${vencText}${(item.venc && item.venc!=="—") ? ' ('+daysToExpire(item)+' días)' : ''}</td>
+      <td>${escapeHtml(item.cat)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- Initial render ---------- */
+let currentList = [...data];
+renderTable(currentList);
+
+/* ---------- Chips (filtros rápidos) ---------- */
+document.querySelectorAll('.chip').forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    const filter = chip.dataset.filter;
+    if(filter === "Todos") {
+      currentList = [...data];
+    } else {
+      currentList = data.filter(x => x.cat === filter);
+    }
+    // reset sorting when changing filter
+    lastSortKey = null; lastSortDir = 1;
+    renderTable(currentList);
+    updateCharts(); // update charts to reflect current filter
+  });
+});
+
+/* ---------- Sorting by column ---------- */
+let lastSortKey = null;
+let lastSortDir = 1;
+document.querySelectorAll('th[data-key]').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const key = th.dataset.key;
+    if(lastSortKey === key) lastSortDir *= -1; else { lastSortKey = key; lastSortDir = 1; }
+    document.querySelectorAll('th').forEach(h=>h.classList.remove('sort-asc','sort-desc'));
+    th.classList.add(lastSortDir === 1 ? 'sort-asc' : 'sort-desc');
+
+    const sorted = [...currentList].sort((a,b)=>{
+      if(key === 'pct') return ((a.pct||0) - (b.pct||0)) * lastSortDir;
+      if(key === 'venc'){
+        const da = parseDateDMY(a.venc) || new Date(3000,0,1);
+        const db = parseDateDMY(b.venc) || new Date(3000,0,1);
+        return (da - db) * lastSortDir;
       }
-      tr.innerHTML=`<td>${d.producto}${d.ingresado?" ⭐":""}</td>
-                    <td>${d.pct!==null?d.pct+"%":"—"}</td>
-                    <td class="${colorClass}">${d.venc}</td>
-                    <td>${d.cat}</td>`;
-      tbody.appendChild(tr);
+      return (String(a[key]||'').localeCompare(String(b[key]||''))) * lastSortDir;
     });
-  }
-  function parseDate(str){
-    if(!str||str==="—") return new Date(3000,0,1);
-    const [d,m,y]=str.split("/").map(n=>parseInt(n));
-    return new Date(y,m-1,d);
-  }
+    renderTable(sorted);
+  });
+});
 
-  // === SORT ===
-  let sortKey=null, sortDir=1;
-  document.querySelectorAll("th").forEach(th=>{
-    th.addEventListener("click",()=>{
-      const key=th.dataset.key;
-      if(sortKey===key) sortDir*=-1; else {sortKey=key;sortDir=1;}
-      document.querySelectorAll("th").forEach(x=>x.classList.remove("sort-asc","sort-desc"));
-      th.classList.add(sortDir===1?"sort-asc":"sort-desc");
-      const sorted=[...data].sort((a,b)=>{
-        if(key==="pct"){return ((a.pct||0)-(b.pct||0))*sortDir;}
-        if(key==="venc"){return (parseDate(a.venc)-parseDate(b.venc))*sortDir;}
-        return a[key].localeCompare(b[key])*sortDir;
-      });
-      renderTable(sorted);
-    });
+/* ---------- Charts ---------- */
+let chartBar, chartPie, chartLine;
+function buildCharts(){
+  const grouped = groupByCat(data);
+  const labels = Object.keys(grouped);
+  const values = Object.values(grouped);
+  const palette = ["#1e3a8a","#2563eb","#3b82f6","#60a5fa","#93c5fd","#bfdbfe"];
+
+  const ctxBar = document.getElementById('chartBar').getContext('2d');
+  chartBar = new Chart(ctxBar, {
+    type:'bar',
+    data:{labels, datasets:[{label:'Stock (suma % aproximada)', data:values, backgroundColor:palette}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
   });
 
-  // === GRÁFICOS ===
-  const grouped={};
-  data.forEach(d=>{if(!grouped[d.cat])grouped[d.cat]=0;grouped[d.cat]+=(d.pct||100);});
-  const colors=["#1e3a8a","#2563eb","#3b82f6","#60a5fa","#93c5fd","#bfdbfe"];
-  new Chart(document.getElementById("chartBar"),{type:"bar",data:{labels:Object.keys(grouped),datasets:[{data:Object.values(grouped),backgroundColor:colors}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
-  new Chart(document.getElementById("chartPie"),{type:"doughnut",data:{labels:Object.keys(grouped),datasets:[{data:Object.values(grouped),backgroundColor:colors}]},options:{plugins:{legend:{position:"right"}}}});
-  new Chart(document.getElementById("chartLine"),{type:"line",data:{labels:["Semana 1","Semana 2","Semana 3","Semana 4"],datasets:[{label:"Consumo simulado",data:[120,95,80,65],borderColor:"#1e40af",backgroundColor:"#3b82f6",tension:0.3}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
-
-  // === RECOMENDACIONES ===
-  const recs=document.getElementById("recList");
-  data.forEach(d=>{
-    if(d.pct!==null&&d.pct<=40){
-      recs.innerHTML+=`<div class="card"><strong>${d.producto} bajo (${d.pct}%)</strong><div class="muted">Reponer pronto.</div></div>`;
-    }
-    if(d.venc&&d.venc!=="—"){
-      const diff=(parseDate(d.venc)-today)/(1000*3600*24);
-      if(diff<15){recs.innerHTML+=`<div class="card"><strong>${d.producto} próximo a vencer</strong><div class="muted">Vence ${d.venc} (en ${Math.ceil(diff)} días).</div></div>`;}
-    }
+  const ctxPie = document.getElementById('chartPie').getContext('2d');
+  chartPie = new Chart(ctxPie, {
+    type:'doughnut',
+    data:{labels, datasets:[{data:values, backgroundColor:palette}]},
+    options:{plugins:{legend:{position:'right'}}}
   });
 
-  // === RESUMEN ===
-  const statsBox=document.getElementById("statsBox");
-  const total=data.length;
-  const bajos=data.filter(d=>d.pct!==null&&d.pct<=40).length;
-  const proximos15=data.filter(d=>daysToExpire(d)<=15).length;
-  const proximos7=data.filter(d=>daysToExpire(d)<=7).length;
-  const proximos3=data.filter(d=>daysToExpire(d)<=3).length;
-  const sinvenc=data.filter(d=>!d.venc||d.venc==="—").length;
-  const nuevos=data.filter(d=>d.ingresado).length;
-  const stats=[
-    {label:"Total productos",val:total},
-    {label:"Stock bajo",val:bajos},
-    {label:"Vencen ≤15 días",val:proximos15},
-    {label:"Vencen ≤7 días",val:proximos7},
-    {label:"Vencen ≤3 días",val:proximos3},
-    {label:"Sin vencimiento",val:sinvenc},
-    {label:"Ingresados hoy",val:nuevos}
+  const ctxLine = document.getElementById('chartLine').getContext('2d');
+  // Simple synthetic timeline: count per week by soonest expiries
+  const weeks = ['Semana 1','Semana 2','Semana 3','Semana 4'];
+  const simulated = [120,95,80,65];
+  chartLine = new Chart(ctxLine, {
+    type:'line',
+    data:{labels:weeks, datasets:[{label:'Consumo simulado', data:simulated, borderColor:'#1e40af', backgroundColor:'#3b82f6', tension:0.3}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+  });
+}
+
+function updateCharts(){
+  const grouped = groupByCat(currentList);
+  const labels = Object.keys(grouped);
+  const values = Object.values(grouped);
+  if(chartBar){
+    chartBar.data.labels = labels;
+    chartBar.data.datasets[0].data = values;
+    chartBar.update();
+  }
+  if(chartPie){
+    chartPie.data.labels = labels;
+    chartPie.data.datasets[0].data = values;
+    chartPie.update();
+  }
+}
+function groupByCat(list){
+  const g = {};
+  list.forEach(it => {
+    const k = it.cat || 'Otros';
+    if(!g[k]) g[k] = 0;
+    g[k] += (it.pct || 100);
+  });
+  return g;
+}
+
+/* ---------- Recomendaciones (stock bajo y próximos a vencer) ---------- */
+const recList = document.getElementById('recList');
+function buildRecommendations(){
+  recList.innerHTML = '';
+  // stock bajo
+  const low = data.filter(d => d.pct !== null && d.pct <= 40);
+  if(low.length){
+    const card = document.createElement('div'); card.className = 'card';
+    card.innerHTML = `<strong>Stock bajo (${low.length})</strong><div class="muted">Productos con porcentaje bajo</div>`;
+    const ul = document.createElement('ul');
+    low.forEach(i => { const li=document.createElement('li'); li.textContent = `${i.producto} — ${i.pct}%`; ul.appendChild(li); });
+    card.appendChild(ul);
+    recList.appendChild(card);
+  }
+  // próximos a vencer (<15 días)
+  const soon = data.filter(d => {
+    const days = daysToExpire(d);
+    return days !== Infinity && days < 15;
+  });
+  if(soon.length){
+    const card = document.createElement('div'); card.className = 'card';
+    card.innerHTML = `<strong>Próximos a vencer (${soon.length})</strong><div class="muted">Mover / Priorizar venta</div>`;
+    const ul = document.createElement('ul');
+    soon.forEach(i => {
+      const li = document.createElement('li');
+      li.textContent = `${i.producto} — ${i.venc} (${daysToExpire(i)} días)`;
+      ul.appendChild(li);
+    });
+    card.appendChild(ul);
+    recList.appendChild(card);
+  }
+  if(!low.length && !soon.length){
+    recList.innerHTML = '<div class="card"><strong>No hay alertas</strong><div class="muted">Todo en rango</div></div>';
+  }
+}
+
+/* ---------- Resumen con acordeones (click para ver lista) ---------- */
+const statsBox = document.getElementById('statsBox');
+function buildStats(){
+  statsBox.innerHTML = '';
+  const total = data.length;
+  const bajos = data.filter(d => d.pct !== null && d.pct <= 40);
+  const venc15 = data.filter(d => daysToExpire(d) <= 15);
+  const venc7 = data.filter(d => daysToExpire(d) <= 7);
+  const venc3 = data.filter(d => daysToExpire(d) <= 3);
+  const sinv = data.filter(d => !d.venc || d.venc === '—');
+  const nuevos = data.filter(d => d.ingresado);
+
+  const stats = [
+    {label:'Total productos', val: total, list: data},
+    {label:'Ingresados hoy', val: nuevos.length, list: nuevos},
+    {label:'Vencen ≤15 días', val: venc15.length, list: venc15},
+    {label:'Vencen ≤7 días', val: venc7.length, list: venc7},
+    {label:'Vencen ≤3 días', val: venc3.length, list: venc3},
+    {label:'Stock bajo', val: bajos.length, list: bajos},
+    {label:'Sin vencimiento', val: sinv.length, list: sinv}
   ];
-  stats.forEach(s=>{statsBox.innerHTML+=`<div class="stat"><strong>${s.val}</strong><span class="muted">${s.label}</span></div>`;});
-  function daysToExpire(d){if(!d.venc||d.venc==="—") return Infinity;return (parseDate(d.venc)-today)/(1000*3600*24);}
 
-  // === NAV ===
-  const buttons=document.querySelectorAll(".nav-btn"); const tabs=document.querySelectorAll(".tab"); const title=document.getElementById("title");
-  buttons.forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      buttons.forEach(b=>b.classList.remove("active"));btn.classList.add("active");
-      tabs.forEach(tab=>tab.classList.remove("active"));
-      document.getElementById("tab-"+btn.dataset.tab).classList.add("active");
-      title.textContent=btn.textContent.trim();
+  stats.forEach((s, idx) => {
+    const div = document.createElement('div');
+    div.className = 'stat';
+    const accId = 'acc-'+idx;
+    const itemsHtml = s.list.length ? s.list.map(it=>{
+      const venc = (it.venc && it.venc!=="—") ? ` — ${it.venc} (${daysToExpire(it)} días)` : ' — Sin vencimiento';
+      return `<li>${escapeHtml(it.producto)}${it.ingresado? ' ⭐':''}${venc}</li>`;
+    }).join('') : '<li>(sin items)</li>';
+    div.innerHTML = `<strong>${s.val}</strong><span class="muted">${s.label}</span>
+                     <div id="${accId}" class="accordion"><ul>${itemsHtml}</ul></div>`;
+    div.addEventListener('click', () => {
+      const acc = document.getElementById(accId);
+      acc.classList.toggle('open');
     });
+    statsBox.appendChild(div);
   });
+}
+
+/* ---------- Navigation (bottom nav) ---------- */
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('tab-'+tab).classList.add('active');
+    // update page title header
+    document.getElementById('title').textContent = "Dashboard Inventario — " + btn.querySelector('div').textContent;
+    
+    // If showing charts/stock/recs, update charts and recs if necessary
+    if(tab === 'graficos') updateCharts();
+    if(tab === 'recs') buildRecommendations();
+    
+    // Refresh icons after tab change
+    lucide.createIcons();
+  });
+});
+
+/* ---------- Utilities ---------- */
+function initAll(){
+  renderTable(currentList);
+  buildCharts();
+  buildRecommendations();
+  buildStats();
+}
+
+/* ---------- Start ---------- */
+initAll();
 </script>
 </body>
 </html>
