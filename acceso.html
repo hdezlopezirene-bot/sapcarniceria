@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acceso - Carnicería Moderna</title>
+  <title>Panel Control - Carnicería</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
     :root {
@@ -13,7 +13,6 @@
       --surface: #f9fafb;
       --text: #333333;
       --error: #dc3545;
-      --success: #28a745;
     }
     .dark-mode {
       --bg: #121212;
@@ -28,229 +27,46 @@
       background: var(--bg);
       color: var(--text);
       transition: background 0.3s ease;
-      overflow: hidden;
-    }
-    
-    /* PANTALLA DE LOGIN - OCUPA TODA LA PANTALLA */
-    .login-screen {
-      height: 100vh;
-      width: 100vw;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      position: relative;
+      justify-content: flex-start;
+      padding: 40px 20px;
+      overflow-y: auto;
     }
-    
-    .login-container {
-      width: 90%;
-      max-width: 500px;
-      background: var(--surface);
-      border-radius: 25px;
-      padding: 50px 40px;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    
     .header {
       text-align: center;
       margin-bottom: 40px;
     }
     .logo {
-      width: 100px;
-      height: 100px;
+      width: 60px;
+      height: 60px;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
-      border-radius: 25px;
+      border-radius: 15px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
-      font-size: 40px;
-      font-weight: 700;
-      margin: 0 auto 20px;
-    }
-    h1 { 
-      font-size: 32px; 
-      color: var(--text); 
-      margin-bottom: 10px;
-    }
-    .subtitle {
-      font-size: 18px;
-      color: var(--text);
-      opacity: 0.8;
-    }
-    
-    .form-group {
-      margin-bottom: 25px;
-    }
-    
-    .form-label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: var(--text);
-      font-size: 16px;
-    }
-    
-    .form-input {
-      width: 100%;
-      padding: 18px;
-      border: 2px solid #e1e5e9;
-      border-radius: 12px;
-      font-size: 18px;
-      background: var(--bg);
-      color: var(--text);
-      transition: all 0.3s;
-    }
-    
-    .form-input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-    }
-    
-    .password-container {
-      position: relative;
-    }
-    
-    .toggle-password {
-      position: absolute;
-      right: 18px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: #666;
-      cursor: pointer;
-      font-size: 18px;
-      padding: 5px;
-    }
-    
-    .btn-login {
-      width: 100%;
-      padding: 18px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-size: 18px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.3s, box-shadow 0.3s;
-      margin-top: 20px;
-    }
-    
-    .btn-login:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
-    }
-    
-    .btn-login:active {
-      transform: translateY(0);
-    }
-    
-    .error-message {
-      color: var(--error);
-      font-size: 16px;
-      text-align: center;
-      margin-top: 20px;
-      min-height: 24px;
-      font-weight: 500;
-    }
-    
-    .theme-toggle {
-      position: absolute;
-      top: 30px;
-      right: 30px;
-      background: rgba(255,255,255,0.2);
-      border: none;
       font-size: 24px;
-      color: white;
-      cursor: pointer;
-      padding: 15px;
-      border-radius: 50%;
-      backdrop-filter: blur(10px);
-    }
-    
-    .footer {
-      text-align: center;
-      margin-top: 40px;
-      font-size: 16px;
-      color: rgba(255,255,255,0.8);
-      position: absolute;
-      bottom: 30px;
-      width: 100%;
-    }
-    
-    /* PANEL PRINCIPAL (OCULTO INICIALMENTE) */
-    .main-panel {
-      display: none;
-      height: 100vh;
-      width: 100vw;
-      padding: 20px;
-      overflow-y: auto;
-      background: var(--bg);
-    }
-    
-    .user-info {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background: var(--surface);
-      padding: 12px 18px;
-      border-radius: 12px;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    
-    .logout-btn {
-      background: none;
-      border: none;
-      color: var(--error);
-      cursor: pointer;
-      margin-left: 15px;
-      font-size: 16px;
-      padding: 5px 10px;
-      border-radius: 6px;
-      transition: background 0.3s;
-    }
-    
-    .logout-btn:hover {
-      background: rgba(220, 53, 69, 0.1);
-    }
-    
-    .main-header {
-      text-align: center;
-      margin: 80px auto 40px;
-      max-width: 600px;
-    }
-    
-    .main-logo {
-      width: 80px;
-      height: 80px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 32px;
       font-weight: 700;
-      margin: 0 auto 15px;
+      margin: 0 auto 12px;
+    }
+    h1 { font-size: 26px; color: var(--text); }
+    .subtitle { 
+      font-size: 16px; 
+      color: var(--text); 
+      margin-bottom: 30px;
+      text-align: center;
     }
     
-    /* Grid groups para el panel principal */
+    /* Grid de 3 columnas con grupos separados */
     .grid-group {
       width: 100%;
-      max-width: 500px;
+      max-width: 420px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
-      margin: 0 auto 30px;
+      margin-bottom: 30px;
     }
     
     .card {
@@ -264,24 +80,20 @@
       justify-content: center;
       cursor: pointer;
       transition: transform .3s, box-shadow .3s;
-      padding: 20px;
+      padding: 15px;
       text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
-    
     .card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-4px);
       box-shadow: 0 15px 30px rgba(102, 126, 234, .2);
     }
-    
     .card i {
-      font-size: 32px;
+      font-size: 28px;
       color: var(--primary);
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
-    
     .card .title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--text);
     }
@@ -289,395 +101,292 @@
     /* CRUD */
     .crud {
       width: 100%;
-      max-width: 800px;
-      margin: 0 auto;
+      max-width: 600px;
       display: none;
-      padding: 20px;
     }
-    
     .crud.active {
       display: block;
       animation: fadeIn .4s ease;
     }
-    
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
     .back {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 20px;
-      font-size: 16px;
+      background: none;
+      border: none;
+      font-size: 15px;
       color: var(--primary);
       cursor: pointer;
-      margin-bottom: 25px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.3s;
+      margin-bottom: 20px;
     }
-    
-    .back:hover {
-      background: var(--primary);
-      color: white;
-    }
-    
     .crud-title {
-      font-size: 24px;
-      margin-bottom: 25px;
+      font-size: 22px;
+      margin-bottom: 20px;
       color: var(--text);
-      text-align: center;
     }
-    
     .form-row {
       display: flex;
-      gap: 15px;
-      margin-bottom: 25px;
+      gap: 12px;
+      margin-bottom: 20px;
     }
-    
     .form-row input, .form-row select {
       flex: 1;
-      padding: 15px;
+      padding: 12px 14px;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      font-size: 16px;
+      border-radius: 8px;
+      font-size: 15px;
       background: var(--bg);
       color: var(--text);
     }
-    
     .form-row button {
-      padding: 15px 25px;
+      padding: 12px 20px;
       background: var(--primary);
       color: #fff;
       border: none;
-      border-radius: 10px;
-      font-size: 16px;
+      border-radius: 8px;
+      font-size: 15px;
       cursor: pointer;
-      transition: background 0.3s;
     }
-    
-    .form-row button:hover {
-      background: var(--secondary);
-    }
-    
     table {
       width: 100%;
       border-collapse: collapse;
       background: var(--surface);
-      border-radius: 15px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,.05);
     }
-    
     th, td {
-      padding: 16px 20px;
+      padding: 14px 16px;
       border-bottom: 1px solid var(--border);
     }
-    
     th {
       background: var(--primary);
       color: #fff;
       font-weight: 600;
     }
-    
     .btn-sm {
-      padding: 8px 15px;
+      padding: 6px 12px;
       border: none;
-      border-radius: 8px;
-      font-size: 14px;
+      border-radius: 6px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s;
     }
-    
-    .btn-primary { 
-      background: var(--primary); 
-      color: #fff; 
-    }
-    
-    .btn-primary:hover {
-      background: var(--secondary);
-    }
-    
-    .btn-danger  { 
-      background: var(--error);   
-      color: #fff; 
-    }
-    
-    .btn-danger:hover {
-      background: #c53030;
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-danger  { background: var(--error);   color: #fff; }
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: var(--text-secondary);
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <!-- PANTALLA DE LOGIN - PANTALLA COMPLETA -->
-  <div class="login-screen" id="loginScreen">
-    <button class="theme-toggle" onclick="toggleTheme()">
-      <i class="fas fa-moon"></i>
-    </button>
+  <button class="theme-toggle" onclick="toggleTheme()">
+    <i class="fas fa-moon"></i>
+  </button>
 
-    <div class="login-container">
-      <div class="header">
-        <div class="logo">CM</div>
-        <h1>Carnicería Moderna</h1>
-        <div class="subtitle">Sistema de Gestión Integral</div>
-      </div>
+  <div class="header">
+    <div class="logo">CM</div>
+    <h1>Carnicería Moderna</h1>
+    <div class="subtitle">Sistema de Gestión de Inventario</div>
+  </div>
 
-      <form id="loginForm">
-        <div class="form-group">
-          <label class="form-label" for="rutEmpresa">
-            <i class="fas fa-store"></i> RUT de la Carnicería
-          </label>
-          <input 
-            type="text" 
-            id="rutEmpresa" 
-            class="form-input" 
-            placeholder="12.345.678-9"
-            required
-          >
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="rutPersonal">
-            <i class="fas fa-id-card"></i> RUT Personal
-          </label>
-          <input 
-            type="text" 
-            id="rutPersonal" 
-            class="form-input" 
-            placeholder="12.345.678-9"
-            required
-          >
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="password">
-            <i class="fas fa-lock"></i> Contraseña
-          </label>
-          <div class="password-container">
-            <input 
-              type="password" 
-              id="password" 
-              class="form-input" 
-              placeholder="••••••••"
-              required
-            >
-            <button type="button" class="toggle-password" onclick="togglePassword()">
-              <i class="fas fa-eye"></i>
-            </button>
-          </div>
-        </div>
-
-        <button type="submit" class="btn-login">
-          <i class="fas fa-sign-in-alt"></i> Acceder al Sistema
-        </button>
-
-        <div class="error-message" id="errorMessage"></div>
-      </form>
+  <!-- GRUPO 1: Operaciones Básicas -->
+  <div class="grid-group">
+    <div class="card" onclick="openCrud('recepcionar')">
+      <i class="fas fa-truck-loading"></i>
+      <div class="title">Recepcionar</div>
     </div>
-
-    <div class="footer">
-      Sistema seguro - Carnicería Moderna © 2024
+    <div class="card" onclick="openCrud('ubicar')">
+      <i class="fas fa-warehouse"></i>
+      <div class="title">Ubicar</div>
+    </div>
+    <div class="card" onclick="openCrud('mover')">
+      <i class="fas fa-exchange-alt"></i>
+      <div class="title">Mover</div>
     </div>
   </div>
 
-  <!-- PANEL PRINCIPAL (OCULTO INICIALMENTE) -->
-  <div class="main-panel" id="mainPanel">
-    <div class="user-info">
-      <i class="fas fa-user"></i>
-      <span id="userDisplay">Usuario: -</span>
-      <button class="logout-btn" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i> Salir
-      </button>
+  <!-- GRUPO 2: Gestión de Inventario -->
+  <div class="grid-group">
+    <div class="card" onclick="openCrud('inventario')">
+      <i class="fas fa-boxes"></i>
+      <div class="title">Inventario</div>
     </div>
-
-    <div class="main-header">
-      <div class="main-logo">CM</div>
-      <h1>Carnicería Moderna</h1>
-      <div class="subtitle" id="locationDisplay">Sistema de Gestión de Inventario</div>
+    <div class="card" onclick="openCrud('recuento')">
+      <i class="fas fa-clipboard-check"></i>
+      <div class="title">Recuento</div>
     </div>
-
-    <!-- GRUPOS DE BOTONES (se mantienen igual) -->
-    <div class="grid-group">
-      <div class="card" onclick="openCrud('recepcionar')">
-        <i class="fas fa-truck-loading"></i>
-        <div class="title">Recepcionar</div>
-      </div>
-      <div class="card" onclick="openCrud('ubicar')">
-        <i class="fas fa-warehouse"></i>
-        <div class="title">Ubicar</div>
-      </div>
-      <div class="card" onclick="openCrud('mover')">
-        <i class="fas fa-exchange-alt"></i>
-        <div class="title">Mover</div>
-      </div>
+    <div class="card" onclick="openCrud('checkUbicacion')">
+      <i class="fas fa-map-marker-alt"></i>
+      <div class="title">Check Ubicación</div>
     </div>
-
-    <div class="grid-group">
-      <div class="card" onclick="openCrud('inventario')">
-        <i class="fas fa-boxes"></i>
-        <div class="title">Inventario</div>
-      </div>
-      <div class="card" onclick="openCrud('recuento')">
-        <i class="fas fa-clipboard-check"></i>
-        <div class="title">Recuento</div>
-      </div>
-      <div class="card" onclick="openCrud('checkUbicacion')">
-        <i class="fas fa-map-marker-alt"></i>
-        <div class="title">Check Ubicación</div>
-      </div>
-    </div>
-
-    <div class="grid-group">
-      <div class="card" onclick="openCrud('buscarProductos')">
-        <i class="fas fa-search"></i>
-        <div class="title">Buscar Productos</div>
-      </div>
-      <div class="card" onclick="openCrud('picking')">
-        <i class="fas fa-shopping-basket"></i>
-        <div class="title">Picking</div>
-      </div>
-      <div class="card" onclick="openCrud('devolucionesClientes')">
-        <i class="fas fa-undo-alt"></i>
-        <div class="title">Devoluciones (Clientes)</div>
-      </div>
-    </div>
-
-    <!-- CRUDs (se mantienen igual) -->
-    <div id="recepcionar" class="crud">
-      <button class="back" onclick="goBack()">
-        <i class="fas fa-arrow-left"></i> Volver al Panel
-      </button>
-      <h2 class="crud-title">Recepción de Mercancía</h2>
-      <div class="form-row">
-        <input type="text" id="rProducto" placeholder="Producto">
-        <input type="number" id="rCantidad" placeholder="Cantidad (kg)">
-        <button onclick="addRow('recepcionar')">
-          <i class="fas fa-plus"></i> Agregar
-        </button>
-      </div>
-      <table id="tblRecepcionar">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Producto</th>
-            <th>Cantidad (kg)</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
   </div>
+
+  <!-- GRUPO 3: Operaciones de Venta -->
+  <div class="grid-group">
+    <div class="card" onclick="openCrud('buscarProductos')">
+      <i class="fas fa-search"></i>
+      <div class="title">Buscar Productos</div>
+    </div>
+    <div class="card" onclick="openCrud('picking')">
+      <i class="fas fa-shopping-basket"></i>
+      <div class="title">Picking</div>
+    </div>
+    <div class="card" onclick="openCrud('devolucionesClientes')">
+      <i class="fas fa-undo-alt"></i>
+      <div class="title">Devoluciones (Clientes)</div>
+    </div>
+  </div>
+
+  <!-- GRUPO 4: Logística -->
+  <div class="grid-group">
+    <div class="card" onclick="openCrud('devolucionesProveedores')">
+      <i class="fas fa-truck-moving"></i>
+      <div class="title">Devoluciones (Proveedores)</div>
+    </div>
+    <div class="card" onclick="openCrud('expediciones')">
+      <i class="fas fa-shipping-fast"></i>
+      <div class="title">Expediciones</div>
+    </div>
+    <div class="card" onclick="openCrud('controlCalidad')">
+      <i class="fas fa-award"></i>
+      <div class="title">Control de Calidad</div>
+    </div>
+  </div>
+
+  <!-- GRUPO 5: Gestión de Productos -->
+  <div class="grid-group">
+    <div class="card" onclick="openCrud('cortesCarne')">
+      <i class="fas fa-utensils"></i>
+      <div class="title">Cortes de Carne</div>
+    </div>
+    <div class="card" onclick="openCrud('caducidad')">
+      <i class="fas fa-clock"></i>
+      <div class="title">Control Caducidad</div>
+    </div>
+    <div class="card" onclick="openCrud('proveedores')">
+      <i class="fas fa-handshake"></i>
+      <div class="title">Proveedores</div>
+    </div>
+  </div>
+
+  <!-- GRUPO 6: Reportes -->
+  <div class="grid-group">
+    <div class="card" onclick="openCrud('reportesVentas')">
+      <i class="fas fa-chart-line"></i>
+      <div class="title">Reportes de Ventas</div>
+    </div>
+    <div class="card" onclick="openCrud('estadisticas')">
+      <i class="fas fa-chart-bar"></i>
+      <div class="title">Estadísticas</div>
+    </div>
+    <div class="card" onclick="openCrud('configuracion')">
+      <i class="fas fa-cogs"></i>
+      <div class="title">Configuración</div>
+    </div>
+  </div>
+
+  <!-- CRUDS ESPECÍFICOS PARA CARNICERÍA -->
+  <!-- RECEPCIONAR -->
+  <div id="recepcionar" class="crud">
+    <button class="back" onclick="goBack()">← Volver</button>
+    <h2 class="crud-title">Recepción de Mercancía</h2>
+    <div class="form-row">
+      <input type="text" id="rProducto" placeholder="Producto">
+      <input type="number" id="rCantidad" placeholder="Cantidad (kg)">
+      <button onclick="addRow('recepcionar')">Agregar</button>
+    </div>
+    <table id="tblRecepcionar">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Producto</th>
+          <th>Cantidad (kg)</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- INVENTARIO -->
+  <div id="inventario" class="crud">
+    <button class="back" onclick="goBack()">← Volver</button>
+    <h2 class="crud-title">Inventario Actual</h2>
+    <div class="form-row">
+      <input type="text" id="iProducto" placeholder="Producto">
+      <input type="number" id="iStock" placeholder="Stock (kg)">
+      <button onclick="addRow('inventario')">Agregar</button>
+    </div>
+    <table id="tblInventario">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Producto</th>
+          <th>Stock (kg)</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- CONTROL CADUCIDAD -->
+  <div id="caducidad" class="crud">
+    <button class="back" onclick="goBack()">← Volver</button>
+    <h2 class="crud-title">Control de Caducidad</h2>
+    <div class="form-row">
+      <input type="text" id="cProducto" placeholder="Producto">
+      <input type="date" id="cCaducidad" placeholder="Fecha Caducidad">
+      <button onclick="addRow('caducidad')">Agregar</button>
+    </div>
+    <table id="tblCaducidad">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Producto</th>
+          <th>Caducidad</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- CORTES DE CARNE -->
+  <div id="cortesCarne" class="crud">
+    <button class="back" onclick="goBack()">← Volver</button>
+    <h2 class="crud-title">Cortes de Carne</h2>
+    <div class="form-row">
+      <input type="text" id="ctNombre" placeholder="Nombre del corte">
+      <input type="text" id="ctCategoria" placeholder="Categoría">
+      <button onclick="addRow('cortesCarne')">Agregar</button>
+    </div>
+    <table id="tblCortesCarne">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Los demás CRUDs seguirían el mismo patrón -->
 
   <script>
-    // Base de datos de usuarios
-    const users = {
-      '12.345.678-9': {
-        name: 'Carnicería Moderna Centro',
-        users: {
-          '11.223.344-5': { password: 'carniceria123', name: 'Juan Pérez', role: 'Administrador' },
-          '22.334.455-6': { password: 'carniceria123', name: 'María García', role: 'Vendedor' },
-          '33.445.566-7': { password: 'carniceria123', name: 'Carlos López', role: 'Inventario' }
-        }
-      },
-      '98.765.432-1': {
-        name: 'Carnicería Premium',
-        users: {
-          '44.556.677-8': { password: 'premium456', name: 'Ana Martínez', role: 'Gerente' }
-        }
-      }
-    };
-
-    // Elementos del DOM
-    const loginScreen = document.getElementById('loginScreen');
-    const mainPanel = document.getElementById('mainPanel');
-    const loginForm = document.getElementById('loginForm');
-    const errorMessage = document.getElementById('errorMessage');
-    const userDisplay = document.getElementById('userDisplay');
-    const locationDisplay = document.getElementById('locationDisplay');
-
-    // Función para formatear RUT
-    function formatRut(rut) {
-      return rut.replace(/\./g, '').replace(/-/g, '').toUpperCase();
-    }
-
-    // Función para mostrar/ocultar contraseña
-    function togglePassword() {
-      const passwordInput = document.getElementById('password');
-      const toggleIcon = document.querySelector('.toggle-password i');
-      
-      if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        toggleIcon.className = 'fas fa-eye-slash';
-      } else {
-        passwordInput.type = 'password';
-        toggleIcon.className = 'fas fa-eye';
-      }
-    }
-
-    // Función para cambiar tema
-    function toggleTheme() {
-      document.body.classList.toggle('dark-mode');
-      const icon = document.querySelector('.theme-toggle i');
-      icon.className = document.body.classList.contains('dark-mode') ? 'fas fa-sun' : 'fas fa-moon';
-    }
-
-    // Manejar el login
-    loginForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const rutEmpresa = formatRut(document.getElementById('rutEmpresa').value);
-      const rutPersonal = formatRut(document.getElementById('rutPersonal').value);
-      const password = document.getElementById('password').value;
-
-      // Validar credenciales
-      if (users[rutEmpresa] && users[rutEmpresa].users[rutPersonal]) {
-        const user = users[rutEmpresa].users[rutPersonal];
-        
-        if (user.password === password) {
-          // Login exitoso
-          errorMessage.textContent = '';
-          errorMessage.style.color = 'var(--success)';
-          errorMessage.textContent = '✓ Acceso concedido, redirigiendo...';
-          
-          // Mostrar información del usuario
-          userDisplay.textContent = `${user.name} (${user.role})`;
-          locationDisplay.textContent = users[rutEmpresa].name;
-          
-          // Cambiar a panel principal con transición
-          setTimeout(() => {
-            loginScreen.style.display = 'none';
-            mainPanel.style.display = 'block';
-            document.body.style.background = 'var(--bg)';
-          }, 1500);
-          
-        } else {
-          errorMessage.textContent = '❌ Contraseña incorrecta';
-          errorMessage.style.color = 'var(--error)';
-        }
-      } else {
-        errorMessage.textContent = '❌ RUT de empresa o personal no encontrado';
-        errorMessage.style.color = 'var(--error)';
-      }
-    });
-
-    // Función para logout
-    function logout() {
-      if (confirm('¿Estás seguro de que deseas salir del sistema?')) {
-        mainPanel.style.display = 'none';
-        loginScreen.style.display = 'flex';
-        document.body.style.background = 'linear-gradient(135deg, var(--primary), var(--secondary))';
-        loginForm.reset();
-        errorMessage.textContent = '';
-      }
-    }
-
-    // Funcionalidad del panel principal
+    /* Base de datos en memoria adaptada para carnicería */
     const db = {
       recepcionar: [], 
       ubicar: [], 
@@ -698,6 +407,12 @@
       estadisticas: [],
       configuracion: []
     };
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      document.querySelector('.theme-toggle i').className =
+        document.body.classList.contains('dark-mode') ? 'fas fa-sun' : 'fas fa-moon';
+    }
 
     function openCrud(modulo) {
       document.querySelectorAll('.grid-group').forEach(g => g.style.display = 'none');
@@ -722,12 +437,8 @@
             <td>${idx + 1}</td>
             ${cells}
             <td>
-              <button class="btn-primary btn-sm" onclick="editRow('${modulo}', ${idx})">
-                <i class="fas fa-edit"></i> Editar
-              </button>
-              <button class="btn-danger btn-sm" onclick="deleteRow('${modulo}', ${idx})">
-                <i class="fas fa-trash"></i> Eliminar
-              </button>
+              <button class="btn-primary btn-sm" onclick="editRow('${modulo}', ${idx})">Editar</button>
+              <button class="btn-danger  btn-sm" onclick="deleteRow('${modulo}', ${idx})">Eliminar</button>
             </td>
           </tr>
         `);
@@ -761,22 +472,35 @@
       }
     }
 
-    // Datos de ejemplo
+    // Inicializar con algunos datos de ejemplo para carnicería
     window.addEventListener('DOMContentLoaded', () => {
+      // Datos de ejemplo para recepción
       db.recepcionar = [
         { producto: 'Lomo Vacuno', cantidad: '50' },
         { producto: 'Pechuga Pollo', cantidad: '30' },
         { producto: 'Costillar Cerdo', cantidad: '25' }
       ];
-    });
-
-    // Validación de RUT en tiempo real
-    document.getElementById('rutEmpresa').addEventListener('input', function(e) {
-      this.value = this.value.replace(/[^0-9kK\-\.]/g, '');
-    });
-
-    document.getElementById('rutPersonal').addEventListener('input', function(e) {
-      this.value = this.value.replace(/[^0-9kK\-\.]/g, '');
+      
+      // Datos de ejemplo para inventario
+      db.inventario = [
+        { producto: 'Lomo Vacuno', stock: '45' },
+        { producto: 'Pechuga Pollo', stock: '28' },
+        { producto: 'Costillar Cerdo', stock: '22' }
+      ];
+      
+      // Datos de ejemplo para control de caducidad
+      db.caducidad = [
+        { producto: 'Lomo Vacuno', caducidad: '2023-10-15' },
+        { producto: 'Pechuga Pollo', caducidad: '2023-10-10' },
+        { producto: 'Costillar Cerdo', caducidad: '2023-10-08' }
+      ];
+      
+      // Datos de ejemplo para cortes de carne
+      db.cortesCarne = [
+        { nombre: 'Lomo Liso', categoria: 'Vacuno' },
+        { nombre: 'Entraña', categoria: 'Vacuno' },
+        { nombre: 'Chuleta', categoria: 'Cerdo' }
+      ];
     });
   </script>
 </body>
