@@ -546,6 +546,19 @@
       height: 16px;
     }
 
+    /* New today badge */
+    .new-badge {
+      display: inline-flex;
+      align-items: center;
+      background: #fef3c7;
+      color: #d97706;
+      padding: 2px 6px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
     /* Responsive */
     @media (max-width: 1024px) {
       .sidebar {
@@ -932,7 +945,13 @@
       {producto: "Truto ala", kilos: 2.302, venc: "sin vencimiento", ubicacion: "Vitrina"},
       {producto: "Pechuga deshuesada", kilos: 2.970, venc: "sin vencimiento", ubicacion: "Vitrina"},
       {producto: "Pechuga oferta", kilos: 2.604, venc: "sin vencimiento", ubicacion: "Vitrina"},
-      {producto: "Truto entero", kilos: 3.614, venc: "sin vencimiento", ubicacion: "Vitrina"}
+      {producto: "Truto entero", kilos: 3.614, venc: "sin vencimiento", ubicacion: "Vitrina"},
+      
+      // Nuevos productos ingresados hoy
+      {producto: "Aviones de pollo", kilos: 8.900, venc: "sin vencimiento", ubicacion: "Cámara", ingresadoHoy: true},
+      {producto: "Pechuga Entera", kilos: 11.870, venc: "20/10/2025", ubicacion: "Cámara", ingresadoHoy: true},
+      {producto: "Truto Entero", kilos: 12.155, venc: "20/10/2025", ubicacion: "Cámara", ingresadoHoy: true},
+      {producto: "Truto Entero", kilos: 12.160, venc: "20/10/2025", ubicacion: "Cámara", ingresadoHoy: true}
     ];
 
     // Initialize the application
@@ -949,7 +968,7 @@
         const days = daysToExpire(d);
         return days !== Infinity && days < 15;
       }).length;
-      document.getElementById('new-today').textContent = data.filter(d => d.ingresado).length;
+      document.getElementById('new-today').textContent = data.filter(d => d.ingresadoHoy).length;
     }
 
     // Render stock table
@@ -964,7 +983,10 @@
         const vencText = item.venc && item.venc !== "sin vencimiento" ? item.venc : "Sin vencimiento";
         
         tr.innerHTML = `
-          <td>${escapeHtml(item.producto)}${item.ingresado ? ' <span style="color: #f59e0b;">⭐</span>' : ''}</td>
+          <td>
+            ${escapeHtml(item.producto)}
+            ${item.ingresadoHoy ? '<span class="new-badge">NUEVO HOY</span>' : ''}
+          </td>
           <td>
             <div style="display: flex; align-items: center; gap: 8px;">
               <div style="width: 60px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
@@ -1210,8 +1232,27 @@
         `;
         recList.appendChild(card);
       }
+
+      // Check for new products today
+      const newToday = data.filter(p => p.ingresadoHoy);
       
-      if (lowStock.length === 0 && expiring.length === 0 && highStock.length === 0) {
+      if (newToday.length > 0) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-title">Nuevos Ingresos Hoy</div>
+            <div class="status-badge status-safe">${newToday.length} productos</div>
+          </div>
+          <p>Los siguientes productos fueron ingresados hoy:</p>
+          <ul>
+            ${newToday.map(p => `<li>${p.producto} - ${p.kilos.toFixed(3)} kg (${p.ubicacion})</li>`).join('')}
+          </ul>
+        `;
+        recList.appendChild(card);
+      }
+      
+      if (lowStock.length === 0 && expiring.length === 0 && highStock.length === 0 && newToday.length === 0) {
         recList.innerHTML = `
           <div class="card">
             <div class="card-header">
@@ -1233,6 +1274,7 @@
         Kilos: item.kilos,
         Vencimiento: item.venc,
         Ubicación: item.ubicacion,
+        'Ingresado Hoy': item.ingresadoHoy ? 'Sí' : 'No',
         'Días para vencer': daysToExpire(item) === Infinity ? 'Sin vencimiento' : daysToExpire(item)
       })));
       
@@ -1271,14 +1313,14 @@
             });
             break;
           case 'new-today':
-            items = data.filter(d => d.ingresado);
+            items = data.filter(d => d.ingresadoHoy);
             break;
         }
         
         accordion.innerHTML = `
           <ul>
             ${items.map(item => `
-              <li>${item.producto} - ${item.kilos.toFixed(3)} kg - ${item.ubicacion}</li>
+              <li>${item.producto} - ${item.kilos.toFixed(3)} kg - ${item.ubicacion} ${item.ingresadoHoy ? '<span class="new-badge">NUEVO HOY</span>' : ''}</li>
             `).join('')}
           </ul>
         `;
