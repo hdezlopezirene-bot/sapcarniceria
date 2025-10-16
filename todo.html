@@ -6,6 +6,7 @@
   <title>Dashboard Inventario — Cámara Frigorífica</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -308,6 +309,7 @@
       box-shadow: var(--shadow);
       border-left: 4px solid var(--accent);
       transition: transform 0.2s;
+      cursor: pointer;
     }
 
     .stat-card:hover {
@@ -481,6 +483,69 @@
       color: var(--text-normal);
     }
 
+    /* Hamburger Menu */
+    .hamburger-menu {
+      position: relative;
+    }
+
+    .hamburger-btn {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 24px;
+      height: 18px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .hamburger-btn span {
+      display: block;
+      height: 2px;
+      width: 100%;
+      background-color: var(--text-strong);
+      transition: all 0.3s ease;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 200px;
+      padding: 8px 0;
+      z-index: 1000;
+      display: none;
+    }
+
+    .dropdown-menu.active {
+      display: block;
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      color: var(--text-normal);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dropdown-item:hover {
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+
+    .dropdown-item i {
+      width: 16px;
+      height: 16px;
+    }
+
     /* Responsive */
     @media (max-width: 1024px) {
       .sidebar {
@@ -544,29 +609,29 @@
     <div class="nav-menu">
       <div class="nav-item active" data-tab="graficos">
         <i data-lucide="bar-chart-2"></i>
-        <span>Gráficos</span>
+        <span>Análisis Gráfico</span>
       </div>
       <div class="nav-item" data-tab="stock">
         <i data-lucide="package"></i>
-        <span>Inventario</span>
+        <span>Control de Stock</span>
       </div>
       <div class="nav-item" data-tab="recs">
         <i data-lucide="lightbulb"></i>
-        <span>Recomendaciones</span>
+        <span>Alertas y Sugerencias</span>
       </div>
       <div class="nav-item" data-tab="ventas">
         <i data-lucide="shopping-cart"></i>
-        <span>Ventas</span>
+        <span>Ventas y Tendencias</span>
       </div>
       <div class="nav-item" data-tab="resumen">
         <i data-lucide="pie-chart"></i>
-        <span>Resumen</span>
+        <span>Resumen General</span>
       </div>
     </div>
     
     <div style="padding: 16px; border-top: 1px solid var(--border);">
       <div class="user-info">
-        <div class="user-avatar">JS</div>
+        <div class="user-avatar">DR</div>
         <div>
           <div style="font-weight: 500; font-size: 14px;">Jefe de Stock</div>
           <div style="font-size: 12px; color: var(--text-muted);">Cámara Frigorífica</div>
@@ -578,12 +643,33 @@
   <!-- Main Content -->
   <div class="main-content">
     <div class="header">
-      <div class="header-title" id="title">Dashboard</div>
+      <div class="header-title" id="title">Dashboard de Inventario</div>
       <div style="display: flex; gap: 12px; align-items: center;">
         <div style="font-size: 14px; color: var(--text-muted);">06/10/2025</div>
-        <div class="btn">
+        <div class="btn" id="exportExcelBtn">
           <i data-lucide="download"></i>
-          <span>Exportar</span>
+          <span>Exportar Excel</span>
+        </div>
+        <div class="hamburger-menu">
+          <button class="hamburger-btn" id="hamburgerBtn">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <div class="dropdown-menu" id="dropdownMenu">
+            <div class="dropdown-item">
+              <i data-lucide="settings"></i>
+              <span>Mantenedor</span>
+            </div>
+            <div class="dropdown-item">
+              <i data-lucide="key"></i>
+              <span>Cambio Contraseña</span>
+            </div>
+            <div class="dropdown-item">
+              <i data-lucide="log-out"></i>
+              <span>Logout</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -613,7 +699,7 @@
       <section id="tab-stock" class="tab">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Inventario Actual</div>
+            <div class="card-title">Control de Stock</div>
             <div class="card-actions">
               <div class="btn">
                 <i data-lucide="plus"></i>
@@ -628,12 +714,10 @@
 
           <div class="chip-box" id="chips">
             <div class="chip active" data-filter="Todos">Todos</div>
-            <div class="chip" data-filter="Vacuno">Vacuno</div>
-            <div class="chip" data-filter="Cerdo">Cerdo</div>
-            <div class="chip" data-filter="Pollo">Pollo</div>
-            <div class="chip" data-filter="Procesados">Artesanales</div>
-            <div class="chip" data-filter="Extras">Extras</div>
-            <div class="chip" data-filter="Huevos">Huevos</div>
+            <div class="chip" data-filter="Cámara">Cámara</div>
+            <div class="chip" data-filter="Congelador Grande">Congelador Grande</div>
+            <div class="chip" data-filter="Congelador Chico">Congelador Chico</div>
+            <div class="chip" data-filter="Vitrina">Vitrina</div>
           </div>
 
           <div style="overflow-x: auto;">
@@ -641,9 +725,9 @@
               <thead>
                 <tr>
                   <th data-key="producto">Producto</th>
-                  <th data-key="pct">Stock %</th>
+                  <th data-key="kilos">Kilos</th>
                   <th data-key="venc">Vencimiento</th>
-                  <th data-key="cat">Categoría</th>
+                  <th data-key="ubicacion">Ubicación</th>
                   <th>Estado</th>
                 </tr>
               </thead>
@@ -691,21 +775,25 @@
       <!-- RESUMEN -->
       <section id="tab-resumen" class="tab">
         <div class="stats-grid">
-          <div class="stat-card">
+          <div class="stat-card" data-type="total">
             <div class="stat-value" id="total-products">0</div>
             <div class="stat-label">Total Productos</div>
+            <div class="accordion" id="accordion-total"></div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" data-type="low-stock">
             <div class="stat-value" id="low-stock">0</div>
             <div class="stat-label">Stock Bajo</div>
+            <div class="accordion" id="accordion-low-stock"></div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" data-type="expiring-soon">
             <div class="stat-value" id="expiring-soon">0</div>
             <div class="stat-label">Próximos a Vencer</div>
+            <div class="accordion" id="accordion-expiring-soon"></div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" data-type="new-today">
             <div class="stat-value" id="new-today">0</div>
             <div class="stat-label">Ingresados Hoy</div>
+            <div class="accordion" id="accordion-new-today"></div>
           </div>
         </div>
 
@@ -731,7 +819,7 @@
     </div>
     <div class="nav-btn" data-tab="recs">
       <i data-lucide="lightbulb"></i>
-      <div>Recomendaciones</div>
+      <div>Alertas</div>
     </div>
     <div class="nav-btn" data-tab="ventas">
       <i data-lucide="shopping-cart"></i>
@@ -751,7 +839,7 @@
     const TODAY = new Date("2025-10-06");
     
     function parseDateDMY(str) {
-      if (!str || str === "—") return null;
+      if (!str || str === "—" || str === "sin vencimiento") return null;
       const parts = str.split("/");
       if (parts.length !== 3) return null;
       const d = parseInt(parts[0], 10), m = parseInt(parts[1], 10), y = parseInt(parts[2], 10);
@@ -774,9 +862,9 @@
     }
     
     function getStockStatus(item) {
-      if (item.pct === null) return "status-safe";
-      if (item.pct <= 20) return "status-low";
-      if (item.pct <= 40) return "status-medium";
+      // Consideramos stock bajo si quedan menos de 5 kilos
+      if (item.kilos < 5) return "status-low";
+      if (item.kilos < 10) return "status-medium";
       return "status-good";
     }
     
@@ -784,58 +872,67 @@
       return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
     }
 
-    // Inventory data
+    // Inventory data with kilos and location
     const data = [
-      // Original camera list
-      {producto: "Malaya cerdo", pct: 100, venc: "—", cat: "Cerdo"},
-      {producto: "Entraña cerdo", pct: 100, venc: "—", cat: "Cerdo"},
-      {producto: "Palanca", pct: 100, venc: "06/11/2025", cat: "Vacuno"},
-      {producto: "Punta picana", pct: 50, venc: "23/10/2025", cat: "Vacuno"},
-      {producto: "Paleta (pqleta paleta)", pct: 50, venc: "23/10/2025", cat: "Vacuno"},
-      {producto: "Huachalomo", pct: 100, venc: "16/12/2025", cat: "Vacuno"},
-      {producto: "Entraña vacuno", pct: 20, venc: "17/10/2025", cat: "Vacuno"},
-      {producto: "Poncho vacuno", pct: 10, venc: "17/10/2025", cat: "Vacuno"},
-      {producto: "Filete", pct: 50, venc: "27/10/2025", cat: "Vacuno"},
-      {producto: "Truto ala pollo", pct: 60, venc: "13/10/2025", cat: "Pollo"},
-      {producto: "Truto entero", pct: 40, venc: "13/10/2025", cat: "Pollo"},
-      {producto: "Pollo Ganso", pct: 60, venc: "14/11/2025", cat: "Pollo"},
-      {producto: "Punta de ganso", pct: 40, venc: "21/10/2025", cat: "Vacuno"},
-      {producto: "Asado carnicero", pct: 100, venc: "14/11/2025", cat: "Vacuno"},
-      {producto: "Posta planta", pct: 100, venc: "14/11/2025", cat: "Vacuno"},
-      {producto: "Abastero (60%)", pct: 60, venc: "23/10/2025", cat: "Vacuno"},
-      {producto: "Abastero (100%)", pct: 100, venc: "23/10/2025", cat: "Vacuno"},
-      {producto: "Lomo liso (10%)", pct: 10, venc: "11/12/2025", cat: "Vacuno"},
-      {producto: "Lomo liso (100%)", pct: 100, venc: "04/12/2025", cat: "Vacuno"},
-      {producto: "Longaniza artesanal", pct: 40, venc: "20/10/2025", cat: "Procesados"},
-      {producto: "Costillar", pct: 100, venc: "—", cat: "Cerdo"},
-      {producto: "Lomo cerdo (caja 1)", pct: 100, venc: "—", cat: "Cerdo"},
-      {producto: "Lomo cerdo (caja 2)", pct: 100, venc: "—", cat: "Cerdo"},
-      {producto: "Chuleta vetada (caja)", pct: 100, venc: "—", cat: "Cerdo"},
-      {producto: "Pechuga deshuesada (caja)", pct: 100, venc: "—", cat: "Pollo"},
-      {producto: "Huevos (2.5 bandejas)", pct: null, venc: "20/10/2025", cat: "Huevos"},
-
-      // Earlier "Ingresados hoy" batch (marcados ingresado:true)
-      {producto: "Pollo entero (caja)", pct: 100, venc: "20/11/2026", cat: "Pollo", ingresado: true},
-      {producto: "Tuto entero (caja)", pct: 100, venc: "13/10/2025", cat: "Pollo", ingresado: true},
-      {producto: "Pulpa (caja)", pct: 50, venc: "15/10/2025", cat: "Cerdo", ingresado: true},
-      {producto: "Aviones (caja)", pct: 100, venc: "20/10/2025", cat: "Pollo", ingresado: true},
-      {producto: "Pechuga entera (caja)", pct: 30, venc: "10/10/2025", cat: "Pollo", ingresado: true},
-      {producto: "Pollo trozado (2 cajas)", pct: 100, venc: "24/02/2027", cat: "Pollo", ingresado: true},
-      {producto: "Chuleta centro", pct: 20, venc: "—", cat: "Cerdo", ingresado: true},
-      {producto: "Sobrecostilla", pct: 20, venc: "11/11/2025", cat: "Vacuno", ingresado: true},
-      {producto: "Asiento (caja)", pct: 20, venc: "11/11/2025", cat: "Vacuno", ingresado: true},
-      {producto: "Pechuga entera oferta (2 cajas)", pct: 100, venc: "03/03/2027", cat: "Pollo", ingresado: true},
-      {producto: "Aceite bidón (2)", pct: 100, venc: "26/08/2026", cat: "Extras", ingresado: true},
-
-      // Later items you added
-      {producto: "Prietas (caja)", pct: 60, venc: "01/11/2025", cat: "Procesados", ingresado: true},
-      {producto: "Pechuga entera (caja) - nuevo", pct: 100, venc: "13/10/2025", cat: "Pollo", ingresado: true},
-      {producto: "Pechuga deshuesada (caja) - nuevo", pct: 100, venc: "—", cat: "Pollo", ingresado: true},
-      {producto: "Chuleta vetada (caja) - nuevo", pct: 100, venc: "—", cat: "Cerdo", ingresado: true},
-      {producto: "Tuto entero (caja extra 1)", pct: 100, venc: "13/10/2025", cat: "Pollo", ingresado: true},
-      {producto: "Tuto entero (caja extra 2)", pct: 100, venc: "13/10/2025", cat: "Pollo", ingresado: true},
-      {producto: "Entraña vacuno (otra caja)", pct: 20, venc: "17/10/2025", cat: "Vacuno"},
-      {producto: "Abastero (otra caja)", pct: 100, venc: "23/10/2025", cat: "Vacuno"}
+      // Cámara
+      {producto: "Asado carnicero", kilos: 23.096, venc: "14/11/2025", ubicacion: "Cámara"},
+      {producto: "Pollo Ganso", kilos: 11.174, venc: "14/11/2025", ubicacion: "Cámara"},
+      {producto: "Huachalomo", kilos: 16.150, venc: "16/12/2025", ubicacion: "Cámara"},
+      {producto: "Huachalomo", kilos: 6.800, venc: "14/11/2025", ubicacion: "Cámara"},
+      {producto: "Lomo liso", kilos: 7.168, venc: "11/12/2025", ubicacion: "Cámara"},
+      {producto: "Punta de paleta", kilos: 3.520, venc: "23/10/2025", ubicacion: "Cámara"},
+      {producto: "Abastero", kilos: 3.170, venc: "23/10/2025", ubicacion: "Cámara"},
+      {producto: "Filete", kilos: 2.200, venc: "23/10/2025", ubicacion: "Cámara"},
+      {producto: "Lomo vetado", kilos: 6.800, venc: "23/01/2026", ubicacion: "Cámara"},
+      {producto: "Asiento", kilos: 7.900, venc: "23/01/2026", ubicacion: "Cámara"},
+      {producto: "Punta de ganso", kilos: 2.186, venc: "21/10/2025", ubicacion: "Cámara"},
+      {producto: "Punta picana", kilos: 1.826, venc: "23/10/2025", ubicacion: "Cámara"},
+      {producto: "Pechuga oferta", kilos: 11.450, venc: "27/02/2027", ubicacion: "Cámara"},
+      {producto: "Pulpa de cerdo", kilos: 21.340, venc: "01/12/2026", ubicacion: "Cámara"},
+      {producto: "Pollo trozado", kilos: 15.170, venc: "24/01/2027", ubicacion: "Cámara"},
+      {producto: "Costilla de cerdo", kilos: 22.250, venc: "15/10/2025", ubicacion: "Cámara"},
+      {producto: "Truto entero", kilos: 13.700, venc: "17/03/2027", ubicacion: "Cámara"},
+      {producto: "Despunte para molida", kilos: 10.400, venc: "sin vencimiento", ubicacion: "Cámara"},
+      {producto: "Costillar cerdo", kilos: 20.150, venc: "sin vencimiento", ubicacion: "Cámara"},
+      {producto: "Prietas", kilos: 2.250, venc: "10/11/2025", ubicacion: "Cámara"},
+      {producto: "Posta Paleta", kilos: 4.650, venc: "25/12/2025", ubicacion: "Cámara"},
+      {producto: "Posta Paleta", kilos: 4.400, venc: "14/11/2025", ubicacion: "Cámara"},
+      {producto: "Longaniza", kilos: 3.300, venc: "sin vencimiento", ubicacion: "Cámara"},
+      {producto: "Entraña vacuno", kilos: 1.432, venc: "17/10/2025", ubicacion: "Cámara"},
+      {producto: "Palanca", kilos: 2.990, venc: "06/11/2025", ubicacion: "Cámara"},
+      {producto: "Poncho parrillero", kilos: 2.116, venc: "22/10/2025", ubicacion: "Cámara"},
+      
+      // Congelador Grande
+      {producto: "Truto ala", kilos: 8.0, venc: "sin vencimiento", ubicacion: "Congelador Grande"},
+      {producto: "Pechuga deshuesada", kilos: 9.0, venc: "sin vencimiento", ubicacion: "Congelador Grande"},
+      {producto: "Costillar repasado", kilos: 7.700, venc: "sin vencimiento", ubicacion: "Congelador Grande"},
+      {producto: "Lomo vetado cerdo", kilos: 9.170, venc: "13/05/2027", ubicacion: "Congelador Grande"},
+      {producto: "Chuleta vetada", kilos: 19.400, venc: "sin vencimiento", ubicacion: "Congelador Grande"},
+      {producto: "Lomo vetado cerdo", kilos: 10.029, venc: "14/05/2027", ubicacion: "Congelador Grande"},
+      {producto: "Grasa de pella", kilos: 2.800, venc: "sin vencimiento", ubicacion: "Congelador Grande"},
+      {producto: "Malaya cerdo", kilos: 10.934, venc: "sin vencimiento", ubicacion: "Congelador Grande"},
+      {producto: "Grasa de cerdo", kilos: 3.244, venc: "sin vencimiento", ubicacion: "Congelador Grande"},
+      {producto: "Entraña de cerdo", kilos: 5.900, venc: "sin vencimiento", ubicacion: "Congelador Grande"},
+      
+      // Congelador Chico
+      {producto: "Pollo trozado", kilos: 15.550, venc: "24/01/2027", ubicacion: "Congelador Chico"},
+      {producto: "Pechuga oferta", kilos: 15.210, venc: "27/02/2027", ubicacion: "Congelador Chico"},
+      {producto: "Pechuga oferta", kilos: 15.170, venc: "27/02/2027", ubicacion: "Congelador Chico"},
+      {producto: "Chuleta vetada", kilos: 16.810, venc: "04/04/2027", ubicacion: "Congelador Chico"},
+      {producto: "Chuleta de centro", kilos: 14.900, venc: "12/07/2027", ubicacion: "Congelador Chico"},
+      
+      // Vitrina
+      {producto: "Chuleta centro", kilos: 2.021, venc: "12/07/2027", ubicacion: "Vitrina"},
+      {producto: "Longaniza", kilos: 3.074, venc: "sin vencimiento", ubicacion: "Vitrina"},
+      {producto: "Pulpa cerdo", kilos: 11.028, venc: "sin vencimiento", ubicacion: "Vitrina"},
+      {producto: "Chuleta vetada", kilos: 2.194, venc: "sin vencimiento", ubicacion: "Vitrina"},
+      {producto: "Costillar repasado", kilos: 1.528, venc: "sin vencimiento", ubicacion: "Vitrina"},
+      {producto: "Lomo vetado de cerdo", kilos: 1.968, venc: "sin vencimiento", ubicacion: "Vitrina"},
+      {producto: "Aviones pollo", kilos: 1.850, venc: "sin vencimiento", ubicacion: "Vitrina"},
+      {producto: "Truto ala", kilos: 2.302, venc: "sin vencimiento", ubicacion: "Vitrina"},
+      {producto: "Pechuga deshuesada", kilos: 2.970, venc: "sin vencimiento", ubicacion: "Vitrina"},
+      {producto: "Pechuga oferta", kilos: 2.604, venc: "sin vencimiento", ubicacion: "Vitrina"},
+      {producto: "Truto entero", kilos: 3.614, venc: "sin vencimiento", ubicacion: "Vitrina"}
     ];
 
     // Initialize the application
@@ -847,7 +944,7 @@
     // Initialize dashboard stats
     function initStats() {
       document.getElementById('total-products').textContent = data.length;
-      document.getElementById('low-stock').textContent = data.filter(d => d.pct !== null && d.pct <= 40).length;
+      document.getElementById('low-stock').textContent = data.filter(d => d.kilos < 5).length;
       document.getElementById('expiring-soon').textContent = data.filter(d => {
         const days = daysToExpire(d);
         return days !== Infinity && days < 15;
@@ -864,166 +961,146 @@
         const tr = document.createElement('tr');
         const cls = vencClass(item);
         const statusClass = getStockStatus(item);
-        const vencText = item.venc && item.venc !== "—" ? item.venc : "Sin vencimiento";
+        const vencText = item.venc && item.venc !== "sin vencimiento" ? item.venc : "Sin vencimiento";
         
         tr.innerHTML = `
           <td>${escapeHtml(item.producto)}${item.ingresado ? ' <span style="color: #f59e0b;">⭐</span>' : ''}</td>
           <td>
             <div style="display: flex; align-items: center; gap: 8px;">
               <div style="width: 60px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
-                <div style="height: 100%; width: ${item.pct || 0}%; background: ${item.pct <= 40 ? '#dc2626' : (item.pct <= 70 ? '#f59e0b' : '#059669')};"></div>
+                <div style="height: 100%; width: ${Math.min(item.kilos / 25 * 100, 100)}%; background: ${item.kilos < 5 ? '#dc2626' : (item.kilos < 10 ? '#f59e0b' : '#059669')};"></div>
               </div>
-              <span>${item.pct !== null ? item.pct + '%' : '—'}</span>
+              <span>${item.kilos.toFixed(3)} kg</span>
             </div>
           </td>
-          <td class="${cls}">${vencText}${(item.venc && item.venc !== "—") ? ' (' + daysToExpire(item) + ' días)' : ''}</td>
-          <td>${escapeHtml(item.cat)}</td>
-          <td><span class="status-badge ${statusClass}">${item.pct === null ? 'Sin datos' : (item.pct <= 20 ? 'Bajo' : (item.pct <= 40 ? 'Medio' : 'Bueno'))}</span></td>
+          <td class="${cls}">${vencText}${(item.venc && item.venc !== "sin vencimiento") ? ' (' + daysToExpire(item) + ' días)' : ''}</td>
+          <td>${escapeHtml(item.ubicacion)}</td>
+          <td><span class="status-badge ${statusClass}">${item.kilos < 5 ? 'Bajo' : (item.kilos < 10 ? 'Medio' : 'Bueno')}</span></td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // Initialize filters
-    function initFilters() {
-      document.querySelectorAll('.chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-          document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-          chip.classList.add('active');
-          const filter = chip.dataset.filter;
-          
-          if (filter === "Todos") {
-            currentList = [...data];
-          } else {
-            currentList = data.filter(x => x.cat === filter);
-          }
-          
-          lastSortKey = null;
-          lastSortDir = 1;
-          renderTable(currentList);
-          updateCharts();
-        });
+    // Sort table
+    function sortTable(key) {
+      if (lastSortKey === key) {
+        lastSortDir = -lastSortDir;
+      } else {
+        lastSortDir = 1;
+      }
+      lastSortKey = key;
+      
+      currentList.sort((a, b) => {
+        let va = a[key], vb = b[key];
+        if (key === 'kilos') {
+          va = a.kilos;
+          vb = b.kilos;
+        } else if (key === 'venc') {
+          va = daysToExpire(a);
+          vb = daysToExpire(b);
+        }
+        if (va === vb) return 0;
+        return (va < vb ? -1 : 1) * lastSortDir;
       });
-    }
-
-    // Initialize table sorting
-    function initSorting() {
-      document.querySelectorAll('th[data-key]').forEach(th => {
-        th.addEventListener('click', () => {
-          const key = th.dataset.key;
-          if (lastSortKey === key) lastSortDir *= -1; 
-          else { 
-            lastSortKey = key; 
-            lastSortDir = 1; 
-          }
-          
-          document.querySelectorAll('th').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+      
+      renderTable(currentList);
+      
+      // Update sort indicators
+      document.querySelectorAll('th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+        if (th.dataset.key === key) {
           th.classList.add(lastSortDir === 1 ? 'sort-asc' : 'sort-desc');
-
-          const sorted = [...currentList].sort((a, b) => {
-            if (key === 'pct') return ((a.pct || 0) - (b.pct || 0)) * lastSortDir;
-            if (key === 'venc') {
-              const da = parseDateDMY(a.venc) || new Date(3000, 0, 1);
-              const db = parseDateDMY(b.venc) || new Date(3000, 0, 1);
-              return (da - db) * lastSortDir;
-            }
-            return (String(a[key] || '').localeCompare(String(b[key] || ''))) * lastSortDir;
-          });
-          
-          renderTable(sorted);
-        });
+        }
       });
     }
 
-    // Build charts
-    function buildCharts() {
-      const grouped = groupByCat(data);
-      const labels = Object.keys(grouped);
-      const values = Object.values(grouped);
-      const palette = ["#1e40af", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe", "#dbeafe"];
+    // Filter table
+    function filterTable(filter) {
+      const chips = document.querySelectorAll('.chip');
+      chips.forEach(chip => chip.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      if (filter === 'Todos') {
+        currentList = [...data];
+      } else {
+        currentList = data.filter(item => item.ubicacion === filter);
+      }
+      
+      renderTable(currentList);
+    }
 
-      // Bar chart
+    // Initialize charts
+    function initCharts() {
+      // Bar chart - Top products by weight
+      const topProducts = [...data]
+        .sort((a, b) => b.kilos - a.kilos)
+        .slice(0, 8);
+      
       const ctxBar = document.getElementById('chartBar').getContext('2d');
       chartBar = new Chart(ctxBar, {
         type: 'bar',
         data: {
-          labels,
+          labels: topProducts.map(p => p.producto),
           datasets: [{
-            label: 'Stock por Categoría',
-            data: values,
-            backgroundColor: palette,
-            borderColor: palette.map(color => color.replace('0.8', '1')),
-            borderWidth: 1
+            label: 'Kilos',
+            data: topProducts.map(p => p.kilos),
+            backgroundColor: topProducts.map(p => {
+              const days = daysToExpire(p);
+              if (days <= 7) return '#dc2626';
+              if (days <= 30) return '#f59e0b';
+              return '#059669';
+            }),
+            borderWidth: 0
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `Stock: ${context.parsed.y}%`;
-                }
-              }
-            }
+            legend: { display: false },
+            title: { display: true, text: 'Productos con Mayor Stock (kg)' }
           },
           scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Porcentaje de Stock'
-              }
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'Categorías'
-              }
-            }
+            y: { beginAtZero: true, title: { display: true, text: 'Kilos' } }
           }
         }
       });
 
-      // Pie chart
+      // Pie chart - Distribution by location
+      const locationCounts = {};
+      data.forEach(item => {
+        locationCounts[item.ubicacion] = (locationCounts[item.ubicacion] || 0) + 1;
+      });
+      
       const ctxPie = document.getElementById('chartPie').getContext('2d');
       chartPie = new Chart(ctxPie, {
-        type: 'doughnut',
+        type: 'pie',
         data: {
-          labels,
+          labels: Object.keys(locationCounts),
           datasets: [{
-            data: values,
-            backgroundColor: palette,
-            borderWidth: 1
+            data: Object.values(locationCounts),
+            backgroundColor: ['#1e40af', '#3b82f6', '#60a5fa', '#93c5fd']
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: {
-              position: 'right'
-            }
+            legend: { position: 'bottom' },
+            title: { display: true, text: 'Distribución por Ubicación' }
           }
         }
       });
 
-      // Line chart
+      // Line chart - Consumption trend
       const ctxLine = document.getElementById('chartLine').getContext('2d');
-      const weeks = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'];
-      const simulated = [120, 95, 80, 65];
-      
       chartLine = new Chart(ctxLine, {
         type: 'line',
         data: {
-          labels: weeks,
+          labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct'],
           datasets: [{
-            label: 'Consumo Simulado',
-            data: simulated,
+            label: 'Consumo (kg)',
+            data: [120, 150, 180, 170, 160, 190, 210, 200, 220, 230],
             borderColor: '#1e40af',
             backgroundColor: 'rgba(30, 64, 175, 0.1)',
             tension: 0.3,
@@ -1034,298 +1111,253 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: {
-              display: false
-            }
+            title: { display: true, text: 'Evolución de Consumo Mensual' }
           },
           scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Unidades Consumidas'
-              }
-            }
+            y: { beginAtZero: true, title: { display: true, text: 'Kilos' } }
           }
         }
       });
 
       // Sales chart
       const ctxSales = document.getElementById('chartSales').getContext('2d');
-      const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
-      const salesData = [65, 59, 80, 81, 56, 72];
-      
       chartSales = new Chart(ctxSales, {
         type: 'bar',
         data: {
-          labels: months,
+          labels: ['Pulpa cerdo', 'Posta Paleta', 'Sobre costilla', 'Posta negra', 'Posta rosada'],
           datasets: [{
-            label: 'Ventas Mensuales',
-            data: salesData,
-            backgroundColor: 'rgba(59, 130, 246, 0.7)',
-            borderColor: 'rgba(59, 130, 246, 1)',
-            borderWidth: 1
+            label: 'Ventas (kg)',
+            data: [85, 72, 68, 65, 60],
+            backgroundColor: '#059669'
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: {
-              display: false
-            }
+            title: { display: true, text: 'Productos Más Vendidos' }
           },
           scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Unidades Vendidas'
-              }
-            }
+            y: { beginAtZero: true, title: { display: true, text: 'Kilos Vendidos' } }
           }
         }
       });
     }
 
-    function groupByCat(list) {
-      const g = {};
-      list.forEach(it => {
-        const k = it.cat || 'Otros';
-        if (!g[k]) g[k] = 0;
-        g[k] += (it.pct || 100);
-      });
-      return g;
-    }
-
-    function updateCharts() {
-      const grouped = groupByCat(currentList);
-      const labels = Object.keys(grouped);
-      const values = Object.values(grouped);
-      
-      if (chartBar) {
-        chartBar.data.labels = labels;
-        chartBar.data.datasets[0].data = values;
-        chartBar.update();
-      }
-      
-      if (chartPie) {
-        chartPie.data.labels = labels;
-        chartPie.data.datasets[0].data = values;
-        chartPie.update();
-      }
-    }
-
-    // Build recommendations
-    function buildRecommendations() {
+    // Generate recommendations
+    function generateRecs() {
       const recList = document.getElementById('recList');
       recList.innerHTML = '';
       
-      // Low stock
-      const low = data.filter(d => d.pct !== null && d.pct <= 40);
-      if (low.length) {
+      // Check for products with low stock (sorted by kilos ascending)
+      const lowStock = data.filter(p => p.kilos < 5)
+        .sort((a, b) => a.kilos - b.kilos);
+      
+      if (lowStock.length > 0) {
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
           <div class="card-header">
-            <div class="card-title">Stock Bajo (${low.length})</div>
-            <span class="status-badge status-low">Prioridad Alta</span>
+            <div class="card-title">Stock Bajo</div>
+            <div class="status-badge status-low">${lowStock.length} productos</div>
           </div>
-          <div class="muted" style="margin-bottom: 12px;">Productos con porcentaje bajo de stock</div>
+          <p>Los siguientes productos tienen stock bajo (ordenados de menor a mayor):</p>
+          <ul>
+            ${lowStock.map(p => `<li>${p.producto} - ${p.kilos.toFixed(3)} kg (${p.ubicacion})</li>`).join('')}
+          </ul>
         `;
-        
-        const ul = document.createElement('ul');
-        low.forEach(i => {
-          const li = document.createElement('li');
-          li.style.marginBottom = '8px';
-          li.innerHTML = `
-            <div style="display: flex; justify-content: space-between;">
-              <span>${i.producto}</span>
-              <span class="status-badge ${getStockStatus(i)}">${i.pct}%</span>
-            </div>
-          `;
-          ul.appendChild(li);
-        });
-        
-        card.appendChild(ul);
         recList.appendChild(card);
       }
       
-      // Expiring soon
-      const soon = data.filter(d => {
-        const days = daysToExpire(d);
+      // Check for products expiring soon
+      const expiring = data.filter(p => {
+        const days = daysToExpire(p);
         return days !== Infinity && days < 15;
       });
       
-      if (soon.length) {
+      if (expiring.length > 0) {
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
           <div class="card-header">
-            <div class="card-title">Próximos a Vencer (${soon.length})</div>
-            <span class="status-badge status-medium">Prioridad Media</span>
+            <div class="card-title">Próximos a Vencer</div>
+            <div class="status-badge status-medium">${expiring.length} productos</div>
           </div>
-          <div class="muted" style="margin-bottom: 12px;">Mover / Priorizar venta</div>
+          <p>Los siguientes productos están próximos a vencer:</p>
+          <ul>
+            ${expiring.map(p => `<li>${p.producto} - ${p.venc} (${daysToExpire(p)} días)</li>`).join('')}
+          </ul>
         `;
-        
-        const ul = document.createElement('ul');
-        soon.forEach(i => {
-          const li = document.createElement('li');
-          li.style.marginBottom = '8px';
-          const days = daysToExpire(i);
-          const priorityClass = days <= 3 ? 'status-low' : (days <= 7 ? 'status-medium' : 'status-good');
-          
-          li.innerHTML = `
-            <div style="display: flex; justify-content: space-between;">
-              <span>${i.producto}</span>
-              <span class="status-badge ${priorityClass}">${days} días</span>
-            </div>
-            <div style="font-size: 12px; color: var(--text-muted);">Vence: ${i.venc}</div>
-          `;
-          ul.appendChild(li);
-        });
-        
-        card.appendChild(ul);
         recList.appendChild(card);
       }
       
-      if (!low.length && !soon.length) {
+      // Check for products with high stock (sorted by kilos descending)
+      const highStock = data.filter(p => p.kilos > 20)
+        .sort((a, b) => b.kilos - a.kilos);
+      
+      if (highStock.length > 0) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-title">Stock Alto</div>
+            <div class="status-badge status-good">${highStock.length} productos</div>
+          </div>
+          <p>Los siguientes productos tienen stock alto (ordenados de mayor a menor):</p>
+          <ul>
+            ${highStock.map(p => `<li>${p.producto} - ${p.kilos.toFixed(3)} kg (${p.ubicacion})</li>`).join('')}
+          </ul>
+        `;
+        recList.appendChild(card);
+      }
+      
+      if (lowStock.length === 0 && expiring.length === 0 && highStock.length === 0) {
         recList.innerHTML = `
           <div class="card">
-            <div style="text-align: center; padding: 40px 20px;">
-              <i data-lucide="check-circle" style="width: 48px; height: 48px; color: var(--ok); margin-bottom: 16px;"></i>
-              <div class="card-title" style="margin-bottom: 8px;">No hay alertas</div>
-              <div class="muted">Todo está en orden por ahora</div>
+            <div class="card-header">
+              <div class="card-title">Todo en Orden</div>
+              <div class="status-badge status-good">OK</div>
             </div>
+            <p>No se detectaron problemas críticos en el inventario actual.</p>
           </div>
         `;
-        lucide.createIcons();
       }
     }
 
-    // Build stats for analytics tab
-    function buildStats() {
-      const statsBox = document.getElementById('statsBox');
-      statsBox.innerHTML = '';
+    // Export to Excel function
+    function exportToExcel() {
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(data.map(item => ({
+        Producto: item.producto,
+        Kilos: item.kilos,
+        Vencimiento: item.venc,
+        Ubicación: item.ubicacion,
+        'Días para vencer': daysToExpire(item) === Infinity ? 'Sin vencimiento' : daysToExpire(item)
+      })));
       
-      const total = data.length;
-      const bajos = data.filter(d => d.pct !== null && d.pct <= 40);
-      const venc15 = data.filter(d => daysToExpire(d) <= 15);
-      const venc7 = data.filter(d => daysToExpire(d) <= 7);
-      const venc3 = data.filter(d => daysToExpire(d) <= 3);
-      const sinv = data.filter(d => !d.venc || d.venc === '—');
-      const nuevos = data.filter(d => d.ingresado);
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, "Inventario");
+      
+      // Generate Excel file and trigger download
+      XLSX.writeFile(wb, "inventario_camara_frigorifica.xlsx");
+    }
 
-      const stats = [
-        {label: 'Total productos', val: total, list: data},
-        {label: 'Ingresados hoy', val: nuevos.length, list: nuevos},
-        {label: 'Vencen ≤15 días', val: venc15.length, list: venc15},
-        {label: 'Vencen ≤7 días', val: venc7.length, list: venc7},
-        {label: 'Vencen ≤3 días', val: venc3.length, list: venc3},
-        {label: 'Stock bajo', val: bajos.length, list: bajos},
-        {label: 'Sin vencimiento', val: sinv.length, list: sinv}
-      ];
-
-      stats.forEach((s, idx) => {
-        const div = document.createElement('div');
-        div.className = 'stat-card';
-        const accId = 'acc-' + idx;
-        const itemsHtml = s.list.length ? s.list.map(it => {
-          const venc = (it.venc && it.venc !== "—") ? ` — ${it.venc} (${daysToExpire(it)} días)` : ' — Sin vencimiento';
-          return `<li style="margin-bottom: 4px;">${escapeHtml(it.producto)}${it.ingresado ? ' ⭐' : ''}${venc}</li>`;
-        }).join('') : '<li>(sin items)</li>';
+    // Toggle accordion in summary section
+    function toggleAccordion(type) {
+      const accordion = document.getElementById(`accordion-${type}`);
+      const isOpen = accordion.classList.contains('open');
+      
+      // Close all accordions
+      document.querySelectorAll('.accordion').forEach(acc => {
+        acc.classList.remove('open');
+      });
+      
+      // Open the clicked one if it was closed
+      if (!isOpen) {
+        let items = [];
         
-        div.innerHTML = `
-          <div class="stat-value">${s.val}</div>
-          <div class="stat-label">${s.label}</div>
-          <div id="${accId}" class="accordion" style="margin-top: 12px;"><ul style="font-size: 13px;">${itemsHtml}</ul></div>
+        switch(type) {
+          case 'total':
+            items = data;
+            break;
+          case 'low-stock':
+            items = data.filter(d => d.kilos < 5);
+            break;
+          case 'expiring-soon':
+            items = data.filter(d => {
+              const days = daysToExpire(d);
+              return days !== Infinity && days < 15;
+            });
+            break;
+          case 'new-today':
+            items = data.filter(d => d.ingresado);
+            break;
+        }
+        
+        accordion.innerHTML = `
+          <ul>
+            ${items.map(item => `
+              <li>${item.producto} - ${item.kilos.toFixed(3)} kg - ${item.ubicacion}</li>
+            `).join('')}
+          </ul>
         `;
         
-        div.addEventListener('click', () => {
-          const acc = document.getElementById(accId);
-          acc.classList.toggle('open');
-        });
-        
-        statsBox.appendChild(div);
-      });
-    }
-
-    // Navigation
-    function initNavigation() {
-      // Sidebar navigation
-      document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-          document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-          item.classList.add('active');
-          
-          const tab = item.dataset.tab;
-          switchTab(tab);
-        });
-      });
-
-      // Bottom navigation
-      document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          
-          const tab = btn.dataset.tab;
-          switchTab(tab);
-        });
-      });
-    }
-
-    // Switch tab function
-    function switchTab(tab) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById('tab-' + tab).classList.add('active');
-      
-      // Update page title
-      const tabTitles = {
-        'graficos': 'Dashboard Inventario — Gráficos',
-        'stock': 'Dashboard Inventario — Stock',
-        'recs': 'Dashboard Inventario — Recomendaciones',
-        'ventas': 'Dashboard Inventario — Ventas',
-        'resumen': 'Dashboard Inventario — Resumen'
-      };
-      
-      document.getElementById('title').textContent = tabTitles[tab] || 'Dashboard Inventario';
-      
-      // Update sidebar active state
-      document.querySelectorAll('.nav-item').forEach(item => {
-        if (item.dataset.tab === tab) {
-          item.classList.add('active');
-        } else {
-          item.classList.remove('active');
-        }
-      });
-      
-      // Refresh icons after tab change
-      lucide.createIcons();
-      
-      // Update specific content if needed
-      if (tab === 'recs') buildRecommendations();
-      if (tab === 'resumen') {
-        initStats();
-        buildStats();
+        accordion.classList.add('open');
       }
-      if (tab === 'graficos') updateCharts();
     }
 
     // Initialize the application
-    function initApp() {
+    function init() {
       initStats();
-      renderTable(currentList);
-      initFilters();
-      initSorting();
-      buildCharts();
-      buildRecommendations();
-      buildStats();
-      initNavigation();
+      renderTable(data);
+      initCharts();
+      generateRecs();
+      
+      // Set up event listeners
+      document.querySelectorAll('.nav-item, .nav-btn').forEach(el => {
+        el.addEventListener('click', () => {
+          const tabId = el.dataset.tab;
+          
+          // Update active nav items
+          document.querySelectorAll('.nav-item, .nav-btn').forEach(item => {
+            item.classList.remove('active');
+          });
+          el.classList.add('active');
+          
+          // Update active tab
+          document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+          });
+          document.getElementById(`tab-${tabId}`).classList.add('active');
+          
+          // Update title
+          const titles = {
+            graficos: 'Análisis Gráfico',
+            stock: 'Control de Stock',
+            recs: 'Alertas y Sugerencias',
+            ventas: 'Ventas y Tendencias',
+            resumen: 'Resumen General'
+          };
+          document.getElementById('title').textContent = titles[tabId];
+        });
+      });
+      
+      // Set up table sorting
+      document.querySelectorAll('th[data-key]').forEach(th => {
+        th.addEventListener('click', () => sortTable(th.dataset.key));
+      });
+      
+      // Set up filtering
+      document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', (e) => filterTable(e.target.dataset.filter));
+      });
+      
+      // Set up Excel export button
+      document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
+      
+      // Set up hamburger menu
+      document.getElementById('hamburgerBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('dropdownMenu').classList.toggle('active');
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', () => {
+        document.getElementById('dropdownMenu').classList.remove('active');
+      });
+      
+      // Set up accordion for summary cards
+      document.querySelectorAll('.stat-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const type = card.dataset.type;
+          toggleAccordion(type);
+        });
+      });
     }
 
     // Start the application
-    initApp();
+    init();
   </script>
 </body>
 </html>
